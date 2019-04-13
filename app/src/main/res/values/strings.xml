@@ -17,4 +17,9 @@
     <string name="login_email">Email</string>
     <string name="login_button">Login</string>
     <string name="login_register">Or Sign up</string>
+    <string name="register_button">Register</string>
+    <string name="register_email">Email</string>
+    <string name="register_password">Password</string>
+    <string name="registeration_successfull">Successfully Registered</string>
+    <string name="registeration_failed">Registeration Failed Retry Again!</string>
 </resources>
