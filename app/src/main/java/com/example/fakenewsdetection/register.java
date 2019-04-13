@@ -15,6 +15,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.fakenewsdetection.Utilities.Hashing;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -76,17 +77,16 @@ public class register extends AppCompatActivity {
                 }
                 //Data is ready to submit
                 else {
-                     registerUser(email, password, new VolleyCallback() {
+
+
+                     registerUser(email.toLowerCase(),Hashing.hashPassword( password,Hashing.SALT), new VolleyCallback() {
                          @Override
                          public void onSuccess(String result) {
                              Log.d("Register Result", "Server said" +result) ;
+                             Toast.makeText(register.this,"Successfully registered", Toast.LENGTH_LONG).show();
                          }
                      });
                 }
-
-
-
-
 
             }
         });
@@ -119,7 +119,7 @@ public class register extends AppCompatActivity {
 
 
     //method for registering user and sending requests over network
-    public void registerUser(final String email,final String password,  final VolleyCallback callback) {
+    public void registerUser(final String email,final String password,  final register.VolleyCallback callback) {
         Log.d("register", "email Password: " + email +"/"+ password ) ;
         StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.2.103/register.php",
                 new Response.Listener<String>() {
@@ -132,6 +132,7 @@ public class register extends AppCompatActivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 //callback.onSuccess(String.valueOf(error));
+                error.printStackTrace();
                 Log.d("register", "Fail:" + String.valueOf(error) ) ;
 
             }

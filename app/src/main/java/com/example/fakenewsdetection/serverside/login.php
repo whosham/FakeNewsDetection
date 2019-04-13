@@ -2,18 +2,32 @@
 require "conn.php";
 
 
-$user_name = $_POST["user_name"] ?? "";
-$user_pass = $_POST["password"] ?? "" ;
-
+$email = $_POST["email"] ?? "";
+$password = $_POST["password"] ?? "" ;
+$action = $_POST["action"] ?? "" ;
 
 error_reporting( error_reporting() & ~E_NOTICE );
-$mysql_qry = "select * from login_data where (username like '$user_name' or email like '$user_name') and password like '$user_pass'  ; " ;
-$result = mysqli_query($conn, $mysql_qry );
-        $rows = array();
-        while($r = mysqli_fetch_assoc($result)) {
-                $rows[] = $r;
-         }
-         echo json_encode($rows);
+
+if ($action === "check_user") {
+    $mysql_qry = "select email from login where email like '$email' ; " ;
+    $result = mysqli_query($conn, $mysql_qry );
+            $rows = array();
+            while($r = mysqli_fetch_assoc($result)) {
+                    $rows[] = $r;
+             }
+             echo json_encode($rows);
+    }
+
+
+if ($action === "register") {
+    $mysql_qry = "insert into login ( email,password) values ('$email','$password')  ; " ;
+    if ($conn->query($mysql_qry) === TRUE ) {
+        echo "Success";
+    }
+    else {
+        echo "Error: " . $mysql_qry . "<br>" . $conn->error ;
+    }
+}
 
 $conn->close();
 

@@ -1,5 +1,13 @@
-<?php 
+<?php
 
+$conn = mysqli_connect("localhost","root","hesham","fakenews");
 
-$conn = mysqli_connect($config['server_name'],$config['mysql_username'],$config['mysql_password'],$config['db_name']);
-?> 
+//if ($conn)  {
+//   echo "Connection Success!" ;
+
+//}
+//else {
+//   echo "Unable to establish connection" ;
+//}
+
+?>
