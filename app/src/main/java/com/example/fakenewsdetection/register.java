@@ -105,6 +105,8 @@ public class register extends AppCompatActivity {
                                         public void onSuccess(String result) {
                                             Log.d("Register Result", "Server said" +result) ;
                                             Toast.makeText(register.this,"Successfully registered", Toast.LENGTH_LONG).show();
+                                            setResult(RESULT_OK, getIntent());
+                                            finish();
                                         }
                                     });
                                 }
@@ -147,8 +149,22 @@ public class register extends AppCompatActivity {
         void onSuccess(String result);
     }
 
+    //To override the UP bar press and Back Press and make the same behavior
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
 
-    //method for checking if th email already existed in the DB
+    @Override
+    public void onBackPressed() {
+        setResult(RESULT_FIRST_USER);
+        super.onBackPressed();
+
+    }
+
+
+    //method for checking if the email already existed in the DB
     public void checkUser(final String email,  final register.VolleyCallback callback) {
         Log.d("register", "check user email" + email) ;
         StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.2.103/register.php",
@@ -196,6 +212,8 @@ public class register extends AppCompatActivity {
                 //callback.onSuccess(String.valueOf(error));
                 error.printStackTrace();
                 Log.d("register", "Fail:" + String.valueOf(error) ) ;
+                setResult(RESULT_CANCELED,getIntent());
+                finish();
 
             }
         }) {
