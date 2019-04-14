@@ -141,6 +141,17 @@ public class activity_login extends AppCompatActivity {
     }
 
 
+    //To override the UP bar press and Back Press and make the same behavior
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+    }
+
     //Method to handle the result from activities
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
