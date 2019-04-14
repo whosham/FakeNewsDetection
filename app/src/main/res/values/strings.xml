@@ -22,4 +22,5 @@
     <string name="register_password">Password</string>
     <string name="registeration_successfull">Successfully Registered</string>
     <string name="registeration_failed">Registeration Failed Retry Again!</string>
+    <string name="error_username_exists">Email Already Existed</string>
 </resources>

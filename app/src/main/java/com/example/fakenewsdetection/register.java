@@ -17,6 +17,9 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.fakenewsdetection.Utilities.Hashing;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -27,6 +30,8 @@ public class register extends AppCompatActivity {
     private TextInputEditText registerEmail ;
     private TextInputEditText registerPassword ;
     private Button registerSubmit;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,21 +76,46 @@ public class register extends AppCompatActivity {
                     focusView = registerEmail;
                     cancel = true;
                 }
+
+
                 //Data is not valid recheck
                 if (cancel){
                     focusView.requestFocus();
                 }
+
+
                 //Data is ready to submit
                 else {
 
+                     //Checking if the email already existed or not
+                    //check if email already existed in the db
+                    checkUser(email, new VolleyCallback() {
+                        @Override
+                        public void onSuccess(String result) {
+                            try {
+                                JSONArray jsonArray = new JSONArray(result);
+                                Log.d("check user", "Array Length"+ jsonArray.length()) ;
+                                if(jsonArray.length() != 0 ){
+                                    Toast.makeText(register.this,"Email Already Existed!", Toast.LENGTH_LONG).show();
+                                }
+                                else{
+                                    //Email not existed insert the email into db
+                                    registerUser(email.toLowerCase(),Hashing.hashPassword( password,Hashing.SALT), new VolleyCallback() {
+                                        @Override
+                                        public void onSuccess(String result) {
+                                            Log.d("Register Result", "Server said" +result) ;
+                                            Toast.makeText(register.this,"Successfully registered", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                }
 
-                     registerUser(email.toLowerCase(),Hashing.hashPassword( password,Hashing.SALT), new VolleyCallback() {
-                         @Override
-                         public void onSuccess(String result) {
-                             Log.d("Register Result", "Server said" +result) ;
-                             Toast.makeText(register.this,"Successfully registered", Toast.LENGTH_LONG).show();
-                         }
-                     });
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+
+
                 }
 
             }
@@ -115,6 +145,38 @@ public class register extends AppCompatActivity {
 
     public interface VolleyCallback{
         void onSuccess(String result);
+    }
+
+
+    //method for checking if th email already existed in the DB
+    public void checkUser(final String email,  final register.VolleyCallback callback) {
+        Log.d("register", "check user email" + email) ;
+        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.2.103/register.php",
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d("register", "check user" + String.valueOf(response) ) ;
+                        callback.onSuccess(String.valueOf(response.replaceAll("\\s+","")));
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //callback.onSuccess(String.valueOf(error));
+                error.printStackTrace();
+                Log.d("register", "Fail:" + String.valueOf(error) ) ;
+
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("email" , email) ;
+                params.put("action", "check_user" );
+                return params;
+            }
+        };
+
+        Volley.newRequestQueue(register.this).add(request);
     }
 
 
