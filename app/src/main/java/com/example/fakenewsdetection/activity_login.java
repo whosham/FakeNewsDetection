@@ -1,6 +1,7 @@
 package com.example.fakenewsdetection;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
@@ -26,6 +27,8 @@ import org.json.JSONException;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.example.fakenewsdetection.MainActivity.MY_GLOBAL_PREFS;
 
 public class activity_login extends AppCompatActivity {
 
@@ -65,7 +68,7 @@ public class activity_login extends AppCompatActivity {
                 mLastClickTime = SystemClock.elapsedRealtime();
 
                 //Validating user input
-                final String email = loginEmail.getText().toString();
+                final String email = loginEmail.getText().toString().toLowerCase();
                 final String password = loginPassword.getText().toString();
                 //Toast.makeText(register.this,"Register "+ email + " "+ password, Toast.LENGTH_LONG).show();
                 loginEmail.setError(null);
@@ -110,11 +113,21 @@ public class activity_login extends AppCompatActivity {
                                     e.printStackTrace();
                                 }
                                 Log.d("check user", "Array Length"+ jsonArray.length()) ;
+                                //checking if the user email and password are correct.
                                 if(jsonArray.length() == 0 ){
                                     Toast.makeText(activity_login.this,"Wrong Email or Password", Toast.LENGTH_LONG).show();
                                 }
+
+                                //Credential are correct save the login mail in the shared pref and direct user to home
                                 else{
                                     Toast.makeText(activity_login.this,"Login success!", Toast.LENGTH_LONG).show();
+                                    //Saving login email  as shared preferences since user successfully authenticated
+                                    SharedPreferences.Editor editor =
+                                            getSharedPreferences(MY_GLOBAL_PREFS,MODE_PRIVATE).edit();
+                                    editor.putString(activity_login.EMAIL_KEY,email);
+                                    editor.apply();
+                                    setResult(RESULT_OK, getIntent());
+                                    finish();
                                 }
 
                             }
