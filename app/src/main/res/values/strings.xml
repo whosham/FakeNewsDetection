@@ -24,4 +24,5 @@
     <string name="registeration_failed">Registeration Failed Retry Again!</string>
     <string name="error_username_exists">Email Already Existed</string>
     <string name="Logout">Logout</string>
+    <string name="logout_confirmation">Confirm Logging out?</string>
 </resources>
