@@ -8,6 +8,7 @@
     tools:context=".MainActivity">
 
     <TextView
+        android:id="@+id/profile_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Hello World!"
@@ -40,6 +41,12 @@
             app:fabSize="normal"
             android:src="@drawable/ic_add"
             app:layout_anchor="@id/bottomAppbar" />
+
+        <Button
+            android:id="@+id/main_query"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="query" />
     </android.support.design.widget.CoordinatorLayout>
 
 

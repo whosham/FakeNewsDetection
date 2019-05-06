@@ -38,6 +38,7 @@ public class activity_login extends AppCompatActivity {
     private TextInputEditText loginEmail;
     private TextInputEditText loginPassword;
     private TextView signup;
+
     //Avoid multi click
     private long mLastClickTime = 0;
     //to save the user login in the shared preferences
@@ -146,6 +147,9 @@ public class activity_login extends AppCompatActivity {
                 startActivityForResult(signup,REGISTER_REQUEST);
             }
         });
+
+
+
 
     }
 

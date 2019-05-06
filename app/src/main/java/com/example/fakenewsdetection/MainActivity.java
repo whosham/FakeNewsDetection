@@ -14,14 +14,29 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
     //Referencing UI elements
     FloatingActionButton floatingActionButton;
     BottomAppBar bottomAppBar;
-
+    private Button querycc;
 
 
     //Variables for activity request in order to track the status for every activity individually and
@@ -39,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Checking if user already logged in
         SharedPreferences prefs = getSharedPreferences(MainActivity.MY_GLOBAL_PREFS, MODE_PRIVATE);
-        String email = prefs.getString(activity_login.EMAIL_KEY, "");
+        final String email = prefs.getString(activity_login.EMAIL_KEY, "");
         //if user didn't authenticated before direct to login screen
         if (TextUtils.isEmpty(email)) {
             Intent login = new Intent(MainActivity.this, activity_login.class);
@@ -51,6 +66,11 @@ public class MainActivity extends AppCompatActivity {
         bottomAppBar = findViewById(R.id.bottomAppbar);
 
 
+
+
+
+
+
         //for handling fab
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,8 +80,34 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+
+
+        //enroll user
+        querycc= findViewById(R.id.main_query);
+        querycc.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Log.d("enroluserbutton", "enroll user button pressed");
+                enrollUser(email, new VolleyCallback() {
+                    @Override
+                    public void onSuccess(String result) {
+                        try {
+                            JSONObject myJson = new JSONObject(result);
+                            String jwt= myJson.getString("token");
+                            Toast.makeText(MainActivity.this,"JWT:"+jwt, Toast.LENGTH_LONG).show();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        });
+
         //Handling Options menu
         setSupportActionBar(bottomAppBar);
+
 
 
 
@@ -110,6 +156,47 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+
+    //Volley call back interface
+    public interface VolleyCallback{
+        void onSuccess(String result);
+    }
+
+    //Enroll user and getting JWT
+    public void enrollUser(final String email, final MainActivity.VolleyCallback callback) {
+        Log.d("enrolluser", "USERNAME: " + email ) ;
+        StringRequest request = new StringRequest(Request.Method.POST, "http://10.100.1.218:4000/users",
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d("enrolluser", "check JWT" + String.valueOf(response) ) ;
+                        callback.onSuccess(String.valueOf(response.replaceAll("\\s+","")));
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //callback.onSuccess(String.valueOf(error));
+                error.printStackTrace();
+                Log.d("enrolluser", "Fail:" + String.valueOf(error) ) ;
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+
+                params.put("username" , email);
+                params.put("orgName", "Org1" );
+               params.put("Content-Type", "application/x-www-form-urlencoded");
+                params.put("Accept", "application/json");
+                params.put("Accept-Encoding", "utf-8");
+                return params;
+            }
+        };
+
+        Volley.newRequestQueue(MainActivity.this).add(request);
+    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
