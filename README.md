@@ -1,12 +1,12 @@
 ## Making a connection to fabric network using API 
 
-basied on the balance-transfer in fabric--samples 
+based on the balance-transfer in fabric-samples. 
 
 
 ```
 cd fabric-samples/balance-transfer/
 ```
-NOTE: Bug fixed that prevent chaincode from being instantiated and it exits with Timeout error. 
+NOTE: Bug fixed that prevents chaincode from being instantiated and it exits with Timeout error. 
 update timeout on app/instantiate-chaincode.js from 60000 to 120000 
 
 ---
