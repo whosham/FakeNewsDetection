@@ -34,14 +34,15 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     //Referencing UI elements
-    FloatingActionButton floatingActionButton;
-    BottomAppBar bottomAppBar;
+    private FloatingActionButton floatingActionButton;
+    private BottomAppBar bottomAppBar;
     private Button querycc;
 
 
     //Variables for activity request in order to track the status for every activity individually and
     //Track it's exit status
     private static final int SIGNIN_REQUEST = 1001;
+    private static final int ADDEVENT_REQUEST = 1003;
     //creating a global shared preferences
     public static final String MY_GLOBAL_PREFS = "my_global_prefs" ;
 
@@ -62,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+
+
         floatingActionButton = findViewById(R.id.fab);
         bottomAppBar = findViewById(R.id.bottomAppbar);
 
@@ -76,7 +79,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-               //Adding New Story
+               //Adding New Event
+                Intent addEvent = new Intent(MainActivity.this, addEvent.class);
+                startActivityForResult(addEvent, ADDEVENT_REQUEST);
+
             }
         });
 
@@ -166,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
     //Enroll user and getting JWT
     public void enrollUser(final String email, final MainActivity.VolleyCallback callback) {
         Log.d("enrolluser", "USERNAME: " + email ) ;
-        StringRequest request = new StringRequest(Request.Method.POST, "http://10.100.1.218:4000/users",
+        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.3.103:4000/users",
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -206,6 +212,12 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK && requestCode == SIGNIN_REQUEST) {
             Toast.makeText(MainActivity.this,"Welcome!", Toast.LENGTH_LONG).show();
         }
+
+        //checking the Result from Add Event
+        if (resultCode == RESULT_OK && requestCode == ADDEVENT_REQUEST) {
+            Toast.makeText(MainActivity.this,"Your Story is online!", Toast.LENGTH_LONG).show();
+        }
+
 
 
 
