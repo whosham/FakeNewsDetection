@@ -1,6 +1,7 @@
 package com.example.fakenewsdetection;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
     //Track it's exit status
     private static final int SIGNIN_REQUEST = 1001;
     private static final int ADDEVENT_REQUEST = 1003;
+    private static final int LOCATION_ACCESS_REQUEST = 1004;
     //creating a global shared preferences
     public static final String MY_GLOBAL_PREFS = "my_global_prefs" ;
 
@@ -74,6 +76,16 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
     private FusedLocationProviderClient fusedLocationProviderClient;
     private String latitude,longitude;
     private int LOCATION_PERMISSION_CODE=1;
+
+
+    //Trying Background update of activity
+    private FusedLocationProviderClient fusedLocationClient1;
+
+
+    static MainActivity instance ;
+    public static MainActivity getInstance(){
+        return instance ;
+    }
 
 
 
@@ -91,6 +103,28 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
             Intent login = new Intent(MainActivity.this, activity_login.class);
             startActivityForResult(login, SIGNIN_REQUEST);
         }
+
+
+
+
+        //checking Location permissions.
+        //checking on Location permission
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(MainActivity.this, "Location Access already been granted! ", Toast.LENGTH_SHORT).show();
+           // updateLocation();
+        }
+        else {
+            //Call the location activity request
+            Intent allowLocationAccess = new Intent(MainActivity.this, LocationRequest.class);
+            startActivityForResult(allowLocationAccess, LOCATION_ACCESS_REQUEST);
+        }
+
+        // using background for location
+        instance= this;
+
+
+
+
 
         //Getting Location
         googleApiClient =  new GoogleApiClient.Builder(this)
@@ -125,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
 //        });
 
 
-        
+
 
 
 
@@ -186,6 +220,9 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
 
     }
 
+    private void updateLocation() {
+    }
+
     private void loadDataFromServer(int i) {
 
         //doing the network request fetch json data and
@@ -201,6 +238,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
         return true;
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -235,7 +273,20 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
                 return true;
 
             case  R.id.bottom_app_location:
-                Toast.makeText(MainActivity.this, "Location is: " +latitude + "/" + longitude  , Toast.LENGTH_SHORT).show();
+                fusedLocationClient1 = LocationServices.getFusedLocationProviderClient(this);
+                fusedLocationClient1.getLastLocation()
+                        .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                            @Override
+                            public void onSuccess(Location location) {
+                                if(location != null){
+                                    latitude=String.valueOf(location.getLatitude());
+                                    longitude=String.valueOf(location.getLongitude());
+                                    Toast.makeText(MainActivity.this, "Location is: " +latitude + "/" + longitude  , Toast.LENGTH_SHORT).show();
+                                }
+
+                            }
+                        });
+
 
         }
 
@@ -245,11 +296,12 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
 
     //Location Handling Methods
 
-
     @Override
     protected void onStart() {
         super.onStart();
         googleApiClient.connect();
+
+
     }
 
     @Override
@@ -270,7 +322,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
         else {
             requestLocationPermissions();
         }
-        
+
         fusedLocationProviderClient.getLastLocation()
                 .addOnSuccessListener(this, new OnSuccessListener<Location>() {
                     @Override
@@ -283,6 +335,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
                     }
                 });
     }
+
 
     private void requestLocationPermissions() {
         ActivityCompat.requestPermissions(MainActivity.this,
@@ -298,8 +351,8 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d("Mainactivity", "Connection Failed");
     }
-
-
+//
+//
     //Volley call back interface
     public interface VolleyCallback{
         void onSuccess(String result);
@@ -329,7 +382,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
 
                 params.put("username" , email);
                 params.put("orgName", "Org1" );
-               params.put("Content-Type", "application/x-www-form-urlencoded");
+                params.put("Content-Type", "application/x-www-form-urlencoded");
                 params.put("Accept", "application/json");
                 params.put("Accept-Encoding", "utf-8");
                 return params;
@@ -353,6 +406,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
         if (resultCode == RESULT_OK && requestCode == ADDEVENT_REQUEST) {
             Toast.makeText(MainActivity.this,"Your Story is online!", Toast.LENGTH_LONG).show();
         }
+
 
 
 
