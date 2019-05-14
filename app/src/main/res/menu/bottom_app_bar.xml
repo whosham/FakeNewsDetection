@@ -7,6 +7,11 @@
         android:icon="@drawable/ic_home"
         app:showAsAction="ifRoom" />
 
+    <item android:id="@+id/bottom_app_location"
+        android:title="Home"
+        android:icon="@drawable/ic_home_location"
+        app:showAsAction="ifRoom" />
+
     <item android:id="@+id/bottom_item_logout"
         android:title="@string/Logout"/>
 

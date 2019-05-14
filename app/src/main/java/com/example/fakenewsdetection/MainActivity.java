@@ -1,13 +1,18 @@
 package com.example.fakenewsdetection;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.bottomappbar.BottomAppBar;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -37,7 +42,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
+import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
+
+public class MainActivity extends AppCompatActivity implements ConnectionCallbacks, OnConnectionFailedListener {
 
     //Referencing UI elements
     private FloatingActionButton floatingActionButton;
@@ -56,6 +69,13 @@ public class MainActivity extends AppCompatActivity {
     //creating a global shared preferences
     public static final String MY_GLOBAL_PREFS = "my_global_prefs" ;
 
+    //google api client for Location
+    private GoogleApiClient googleApiClient;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private String latitude,longitude;
+    private int LOCATION_PERMISSION_CODE=1;
+
+
 
 
     @Override
@@ -72,6 +92,14 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(login, SIGNIN_REQUEST);
         }
 
+        //Getting Location
+        googleApiClient =  new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+
+        fusedLocationProviderClient= LocationServices.getFusedLocationProviderClient(this) ;
 
 
         //Home Feed //
@@ -206,9 +234,69 @@ public class MainActivity extends AppCompatActivity {
                         .setNegativeButton(android.R.string.no, null).show();
                 return true;
 
+            case  R.id.bottom_app_location:
+                Toast.makeText(MainActivity.this, "Location is: " +latitude + "/" + longitude  , Toast.LENGTH_SHORT).show();
+
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    //Location Handling Methods
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        googleApiClient.connect();
+    }
+
+    @Override
+    protected void onStop() {
+        if (googleApiClient.isConnected()){
+            googleApiClient.disconnect();
+        }
+        super.onStop();
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+        //checking on Location permission
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(MainActivity.this, "Location Access already been granted! ", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            requestLocationPermissions();
+        }
+        
+        fusedLocationProviderClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        if(location != null){
+                            latitude=String.valueOf(location.getLatitude());
+                            longitude=String.valueOf(location.getLongitude());
+                        }
+
+                    }
+                });
+    }
+
+    private void requestLocationPermissions() {
+        ActivityCompat.requestPermissions(MainActivity.this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_CODE);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.d("Mainactivity", "Connection Suspended ");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.d("Mainactivity", "Connection Failed");
     }
 
 
