@@ -167,7 +167,7 @@ public class register extends AppCompatActivity {
     //method for checking if the email already existed in the DB
     public void checkUser(final String email,  final register.VolleyCallback callback) {
         Log.d("register", "check user email" + email) ;
-        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.2.103/register.php",
+        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.3.103/register.php",
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -199,7 +199,7 @@ public class register extends AppCompatActivity {
     //method for registering user and sending requests over network
     public void registerUser(final String email,final String password,  final register.VolleyCallback callback) {
         Log.d("register", "email Password: " + email +"/"+ password ) ;
-        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.2.103/register.php",
+        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.3.103/register.php",
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {

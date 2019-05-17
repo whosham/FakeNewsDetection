@@ -1,20 +1,30 @@
 package com.example.fakenewsdetection;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.bottomappbar.BottomAppBar;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.GridLayout;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -28,25 +38,55 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
-    
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
+import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
-    
+public class MainActivity extends AppCompatActivity implements ConnectionCallbacks, OnConnectionFailedListener {
 
     //Referencing UI elements
-    FloatingActionButton floatingActionButton;
-    BottomAppBar bottomAppBar;
+    private FloatingActionButton floatingActionButton;
+    private BottomAppBar bottomAppBar;
     private Button querycc;
+    private RecyclerView recyclerView;
+    private GridLayoutManager gridLayoutManager ;
+    private CustomAdapter adapter ;
+    private List<MyData> data_list ;
 
 
     //Variables for activity request in order to track the status for every activity individually and
     //Track it's exit status
     private static final int SIGNIN_REQUEST = 1001;
+    private static final int ADDEVENT_REQUEST = 1003;
+    private static final int LOCATION_ACCESS_REQUEST = 1004;
     //creating a global shared preferences
     public static final String MY_GLOBAL_PREFS = "my_global_prefs" ;
+
+    //google api client for Location
+    private GoogleApiClient googleApiClient;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private String latitude,longitude;
+    private int LOCATION_PERMISSION_CODE=1;
+
+
+    //Trying Background update of activity
+    private FusedLocationProviderClient fusedLocationClient1;
+
+
+    static MainActivity instance ;
+    public static MainActivity getInstance(){
+        return instance ;
+    }
+
 
 
 
@@ -65,6 +105,67 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+
+
+        //checking Location permissions.
+        //checking on Location permission
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(MainActivity.this, "Location Access already been granted! ", Toast.LENGTH_SHORT).show();
+           // updateLocation();
+        }
+        else {
+            //Call the location activity request
+            Intent allowLocationAccess = new Intent(MainActivity.this, LocationRequest.class);
+            startActivityForResult(allowLocationAccess, LOCATION_ACCESS_REQUEST);
+        }
+
+        // using background for location
+        instance= this;
+
+
+
+
+
+        //Getting Location
+        googleApiClient =  new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+
+        fusedLocationProviderClient= LocationServices.getFusedLocationProviderClient(this) ;
+
+
+        //Home Feed //
+//        recyclerView = findViewById(R.id.recyclerView) ;
+//        data_list =  new ArrayList<>() ;
+//        loadDataFromServer(0) ;
+//        //om response add
+//        adapter.notifyDataSetChanged();
+//
+//        gridLayoutManager = new GridLayoutManager(this,2);
+//        recyclerView.setLayoutManager(gridLayoutManager);
+//        //bind data to the recyclerview it self
+//        adapter = new CustomAdapter (this, data_list) ;
+//        recyclerView.setAdapter(adapter);
+//
+//        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+//            @Override
+//            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+//                if (gridLayoutManager.findLastCompletelyVisibleItemPosition() == data_list.size()-1){
+//                    loadDataFromServer(data_list.get(data_list.size()-1).getId());
+//                }
+//            }
+//        });
+
+
+
+
+
+
+
+
+
         floatingActionButton = findViewById(R.id.fab);
         bottomAppBar = findViewById(R.id.bottomAppbar);
 
@@ -79,7 +180,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-               //Adding New Story
+               //Adding New Event
+                Intent addEvent = new Intent(MainActivity.this, addEvent.class);
+                startActivityForResult(addEvent, ADDEVENT_REQUEST);
+
             }
         });
 
@@ -115,6 +219,18 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
+    private void updateLocation() {
+    }
+
+    private void loadDataFromServer(int i) {
+
+        //doing the network request fetch json data and
+        // for (int i = - ; i <array.length() ; i++ )  { loiop add to list
+        //Mydata data =  new Mydata(id,desc,imageLink )
+        //data_list.add(data)
+    }
+
     //for handling menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -122,6 +238,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -155,12 +272,87 @@ public class MainActivity extends AppCompatActivity {
                         .setNegativeButton(android.R.string.no, null).show();
                 return true;
 
+            case  R.id.bottom_app_location:
+//                fusedLocationClient1 = LocationServices.getFusedLocationProviderClient(this);
+//                fusedLocationClient1.getLastLocation()
+//                        .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+//                            @Override
+//                            public void onSuccess(Location location) {
+////                                if(location != null){
+//                                    latitude=String.valueOf(location.getLatitude());
+//                                    longitude=String.valueOf(location.getLongitude());
+                                    Toast.makeText(MainActivity.this, "Location is: " +latitude + "/" + longitude  , Toast.LENGTH_SHORT).show();
+//                                }
+//
+//                            }
+//                        });
+
+
         }
 
         return super.onOptionsItemSelected(item);
     }
 
 
+    //Location Handling Methods
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        googleApiClient.connect();
+
+
+    }
+
+    @Override
+    protected void onStop() {
+        if (googleApiClient.isConnected()){
+            googleApiClient.disconnect();
+        }
+        super.onStop();
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+        //checking on Location permission
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(MainActivity.this, "Location Access already been granted! ", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            requestLocationPermissions();
+        }
+
+        fusedLocationProviderClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        if(location != null){
+                            latitude=String.valueOf(location.getLatitude());
+                            longitude=String.valueOf(location.getLongitude());
+                        }
+
+                    }
+                });
+    }
+
+
+    private void requestLocationPermissions() {
+        ActivityCompat.requestPermissions(MainActivity.this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_CODE);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.d("Mainactivity", "Connection Suspended ");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.d("Mainactivity", "Connection Failed");
+    }
+//
+//
     //Volley call back interface
     public interface VolleyCallback{
         void onSuccess(String result);
@@ -169,7 +361,7 @@ public class MainActivity extends AppCompatActivity {
     //Enroll user and getting JWT
     public void enrollUser(final String email, final MainActivity.VolleyCallback callback) {
         Log.d("enrolluser", "USERNAME: " + email ) ;
-        StringRequest request = new StringRequest(Request.Method.POST, "http://10.100.1.218:4000/users",
+        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.3.103:4000/users",
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -190,7 +382,7 @@ public class MainActivity extends AppCompatActivity {
 
                 params.put("username" , email);
                 params.put("orgName", "Org1" );
-               params.put("Content-Type", "application/x-www-form-urlencoded");
+                params.put("Content-Type", "application/x-www-form-urlencoded");
                 params.put("Accept", "application/json");
                 params.put("Accept-Encoding", "utf-8");
                 return params;
@@ -209,6 +401,13 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK && requestCode == SIGNIN_REQUEST) {
             Toast.makeText(MainActivity.this,"Welcome!", Toast.LENGTH_LONG).show();
         }
+
+        //checking the Result from Add Event
+        if (resultCode == RESULT_OK && requestCode == ADDEVENT_REQUEST) {
+            Toast.makeText(MainActivity.this,"Your Story is online!", Toast.LENGTH_LONG).show();
+        }
+
+
 
 
 

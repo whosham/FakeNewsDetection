@@ -190,7 +190,7 @@ public class activity_login extends AppCompatActivity {
     //checking user credential
     public void loginAttempt(final String email, final String password,  final activity_login.VolleyCallback callback) {
         Log.d("activity_login", "email password " + email +"/"+ password) ;
-        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.2.103/login.php",
+        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.3.103/login.php",
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
