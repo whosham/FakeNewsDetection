@@ -273,19 +273,19 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
                 return true;
 
             case  R.id.bottom_app_location:
-                fusedLocationClient1 = LocationServices.getFusedLocationProviderClient(this);
-                fusedLocationClient1.getLastLocation()
-                        .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                            @Override
-                            public void onSuccess(Location location) {
-                                if(location != null){
-                                    latitude=String.valueOf(location.getLatitude());
-                                    longitude=String.valueOf(location.getLongitude());
+//                fusedLocationClient1 = LocationServices.getFusedLocationProviderClient(this);
+//                fusedLocationClient1.getLastLocation()
+//                        .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+//                            @Override
+//                            public void onSuccess(Location location) {
+////                                if(location != null){
+//                                    latitude=String.valueOf(location.getLatitude());
+//                                    longitude=String.valueOf(location.getLongitude());
                                     Toast.makeText(MainActivity.this, "Location is: " +latitude + "/" + longitude  , Toast.LENGTH_SHORT).show();
-                                }
-
-                            }
-                        });
+//                                }
+//
+//                            }
+//                        });
 
 
         }
