@@ -182,6 +182,8 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
 
                //Adding New Event
                 Intent addEvent = new Intent(MainActivity.this, addEvent.class);
+                addEvent.putExtra("lat", latitude) ;
+                addEvent.putExtra("long", longitude) ;
                 startActivityForResult(addEvent, ADDEVENT_REQUEST);
 
             }
