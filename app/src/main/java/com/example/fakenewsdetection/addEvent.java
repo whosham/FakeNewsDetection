@@ -1,6 +1,8 @@
 package com.example.fakenewsdetection;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -16,17 +18,30 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.fakenewsdetection.Utilities.Hashing;
+
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.example.fakenewsdetection.MainActivity.MY_GLOBAL_PREFS;
 
@@ -37,6 +52,8 @@ public class addEvent extends AppCompatActivity {
     private static final int IMAGE_REQUEST = 1005;
     private Bitmap bitmap;
     private ImageView selectedImage;
+    private EditText eventDescriptionEditText ;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +69,7 @@ public class addEvent extends AppCompatActivity {
         }
 
         //Adding an image
-        addImage = findViewById(R.id.add_image) ;
+        addImage = findViewById(R.id.add_image);
         addImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -69,30 +86,29 @@ public class addEvent extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == STORAGE_PERMISSION_CODE ){
-            if ( grantResults.length>0 && grantResults[0]== PackageManager.PERMISSION_GRANTED ){
+        if (requestCode == STORAGE_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Permission successfully granted", Toast.LENGTH_SHORT).show();
-            }
-            else{
+            } else {
                 Toast.makeText(this, "Permission wasn't granted", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    private void selectImage(){
+    private void selectImage() {
         //TODO loading bar and updating
-        Log.d("addEvent", "2 Inside Image selection done" ) ;
-        Intent intent =  new Intent();
+        Log.d("addEvent", "2 Inside Image selection done");
+        Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(intent,IMAGE_REQUEST);
+        startActivityForResult(intent, IMAGE_REQUEST);
     }
 
-    private String  imageToString(Bitmap bitmap) {
+    private String imageToString(Bitmap bitmap) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG,50,byteArrayOutputStream);
-        byte[] imgBytes= byteArrayOutputStream.toByteArray();
-        return Base64.encodeToString(imgBytes,Base64.DEFAULT);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
+        byte[] imgBytes = byteArrayOutputStream.toByteArray();
+        return Base64.encodeToString(imgBytes, Base64.DEFAULT);
     }
 
     @Override
@@ -105,48 +121,111 @@ public class addEvent extends AppCompatActivity {
             Uri path = data.getData();
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), path);
-                selectedImage =  findViewById(R.id.selected_image);
+                selectedImage = findViewById(R.id.selected_image);
                 selectedImage.setImageBitmap(bitmap);
-
-                //Uploading the image to the server
-                //Loading email from shared preferences
-                SharedPreferences prefs = getSharedPreferences(MY_GLOBAL_PREFS, MODE_PRIVATE);
-                final String username = prefs.getString(activity_login.EMAIL_KEY, "");
-
-                Bundle extras = getIntent().getExtras();
-                String latitude,longitude ;
-                if (extras != null) {
-                    latitude  = extras.getString("lat");
-                    longitude = extras.getString("long");
-                    String image = imageToString(bitmap) ;
-                    Log.d("AddImage", "Lat/Long" + latitude + "/" + longitude);
-                    Log.d("AddImage", "Image string" + image);
-                    Log.d("AddImage", "Hashed image" + Hashing.hashPassword( image,Hashing.SALT));
-                   //  Toast.makeText(this, "Lat/Long" + latitude + "/" + longitude+ ">>>>>" + image , Toast.LENGTH_SHORT).show();
-                }
-
-
-
-//                uploadImage(username, imageToString(bitmap), new VolleyCallback() {
-//                    @Override
-//                    public void onSuccess(String result) {
-//                        //All good
-//                        Log.d("profile", "Photo Uploaded to the server:" + result);
-//                        ImageView imageView = (ImageView) findViewById(R.id.profile_image);
-//                        imageView.setImageBitmap(bitmap);
-//                        Log.d("profile", "Setting the image view");
-//                        //Dismissing the progress bar
-//                        progressBar.setVisibility(View.INVISIBLE);
-//                        SnackBarMessage(R.string.profile_updated_successfully, getResources().getColor(R.color.colorGreen));
-//                    }
-//                });
-
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
+
+    //for handling menu
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.add_event_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.done_button:
+                //Adding Progress bar
+                progressBar =  (ProgressBar) findViewById(R.id.progressbar);
+                progressBar.setVisibility(View.VISIBLE);
+
+                Log.d("Add event Menu ", "Done pressed");
+                //Uploading the event to the server
+                //Loading email from shared preferences
+                SharedPreferences prefs = getSharedPreferences(MY_GLOBAL_PREFS, MODE_PRIVATE);
+                final String username = prefs.getString(activity_login.EMAIL_KEY, "");
+                Bundle extras = getIntent().getExtras();
+                String latitude, longitude;
+                if (extras != null) {
+                    latitude = extras.getString("lat");
+                    longitude = extras.getString("long");
+                    String image = imageToString(bitmap);
+                    eventDescriptionEditText= findViewById(R.id.editText);
+                    String description = eventDescriptionEditText.getText().toString();
+                    Log.d("AddImage", "Lat/Long" + latitude + "/" + longitude);
+                    Log.d("AddImage", "Image string" + image);
+                    Log.d("AddImage", "Hashed image" + Hashing.hashPassword(image, Hashing.SALT));
+                    //  Toast.makeText(this, "Lat/Long" + latitude + "/" + longitude+ ">>>>>" + image , Toast.LENGTH_SHORT).show();
+                    addingEvent(username,description,image, Hashing.hashPassword(image, Hashing.SALT),latitude,longitude, new VolleyCallback() {
+                        @Override
+                        public void onSuccess(String result) {
+                            //All good
+                            Log.d("addevent", "event uploaded to the server :" + result);
+                            //Dismissing the progress bar
+                            Toast.makeText(addEvent.this, "Uploaded Successffully", Toast.LENGTH_SHORT).show();
+                            progressBar.setVisibility(View.INVISIBLE);
+                        }
+                    });
+                }
+
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
+    public interface VolleyCallback{
+        void onSuccess(String result);
+    }
+
+
+    private void addingEvent(final String username, final String description , final String image,  final String image_url ,final String latitude ,final String longitude  , final VolleyCallback callback){
+        Log.d("addevent ", "inside uplaod image username/image" + username+"/"+ image + ">image_url " + image_url) ;
+        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.3.103/images_upload.php",
+
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        //Log.d("TRACKCREATEGROUP", "3 calling groupdata") ;
+                        try {
+                            Log.d("addEvent", "Success:" + String.valueOf(response) ) ;
+                            JSONObject jsonObject =  new JSONObject(response);
+                            String Response= jsonObject.getString("response");
+                            callback.onSuccess(Response);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("profile ", "Fail to upload :" + String.valueOf(error) ) ;
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                Log.d("profile ", "Sending to server:" + username + "/"+ image) ;
+                params.put("username", username);
+                params.put("image", image);
+                params.put("image_url", image_url);
+                params.put("action", "upload_image" );
+                return params;
+            }
+        };
+
+        Volley.newRequestQueue(addEvent.this).add(request);
+    }
+
+
+
 
     //Method for Snackbar
     private void SnackBarMessage(int message,int  Color ) {

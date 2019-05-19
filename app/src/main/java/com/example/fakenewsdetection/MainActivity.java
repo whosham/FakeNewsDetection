@@ -12,6 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.bottomappbar.BottomAppBar;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -25,6 +26,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -353,8 +355,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d("Mainactivity", "Connection Failed");
     }
-//
-//
+
     //Volley call back interface
     public interface VolleyCallback{
         void onSuccess(String result);
@@ -409,9 +410,23 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
             Toast.makeText(MainActivity.this,"Your Story is online!", Toast.LENGTH_LONG).show();
         }
 
+    }
 
-
-
-
+    //Method for Snackbar
+    private void SnackBarMessage(int message,int  Color ) {
+        //showing a snackbar message to the user
+        Snackbar bar = Snackbar.make(findViewById(android.R.id.content),message, Snackbar.LENGTH_LONG)
+                .setActionTextColor(getResources().getColor(R.color.colorWhite))
+                .setAction("Dismiss", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // Handle user action
+                    }
+                });
+        View snackBarView = bar.getView();
+        snackBarView.setBackgroundColor(Color);
+        TextView tv = (TextView) bar.getView().findViewById(android.support.design.R.id.snackbar_text);
+        tv.setTextColor(getResources().getColor(R.color.colorWhite));
+        bar.show();
     }
 }
