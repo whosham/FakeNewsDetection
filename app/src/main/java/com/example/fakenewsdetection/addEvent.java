@@ -142,9 +142,6 @@ public class addEvent extends AppCompatActivity {
         int id = item.getItemId();
         switch (id) {
             case R.id.done_button:
-                //Adding Progress bar
-                progressBar =  (ProgressBar) findViewById(R.id.progressbar);
-                progressBar.setVisibility(View.VISIBLE);
 
                 Log.d("Add event Menu ", "Done pressed");
                 //Uploading the event to the server
@@ -152,41 +149,50 @@ public class addEvent extends AppCompatActivity {
                 SharedPreferences prefs = getSharedPreferences(MY_GLOBAL_PREFS, MODE_PRIVATE);
                 final String email = prefs.getString(activity_login.EMAIL_KEY, "");
                 Bundle extras = getIntent().getExtras();
-                final String latitude, longitude;
-                if (extras != null) {
-                    latitude = extras.getString("lat");
-                    longitude = extras.getString("long");
-                    final String image = imageToString(bitmap);
-                    eventDescriptionEditText= findViewById(R.id.editText);
-                    final String description = eventDescriptionEditText.getText().toString();
-                    Log.d("AddImage", "Lat/Long" + latitude + "/" + longitude);
-                    Log.d("AddImage", "Image string" + image);
-                    Log.d("AddImage", "Hashed image" + Hashing.hashPassword(image, Hashing.SALT));
-                    //  Toast.makeText(this, "Lat/Long" + latitude + "/" + longitude+ ">>>>>" + image , Toast.LENGTH_SHORT).show();
-                    uploadingImages(image,Hashing.hashPassword(image, Hashing.SALT) ,new VolleyCallback() {
-                        @Override
-                        public void onSuccess(String result) {
-                            //All good
-                            Log.d("uploadingImage", "image uploaded to the server :" + result);
-                            //Dismissing the progress bar
-                            Toast.makeText(addEvent.this, "Uploaded Successfully", Toast.LENGTH_SHORT).show();
-                            progressBar.setVisibility(View.INVISIBLE);
-
-                            setResult(RESULT_OK, getIntent());
-                            finish();
-//                            String image_url ="http://192.168.3.103/data/"+Hashing.hashPassword(image, Hashing.SALT) ;
-//                            //Adding the event data to the blockchain
-//                            addingEvent(email, description, image_url, latitude, longitude, new VolleyCallback() {
-//                                @Override
-//                                public void onSuccess(String result) {
-//
-//                                }
-//                            });
 
 
-                        }
-                    });
-                }
+                eventDescriptionEditText= findViewById(R.id.editText);
+                final String description = eventDescriptionEditText.getText().toString();
+                    if (extras != null && bitmap != null ) {
+                        final String latitude, longitude,image;
+                        Log.d("Bitmap", "Bitmap>>>>" + bitmap);
+                        image = imageToString(bitmap);
+                        latitude = extras.getString("lat");
+                        longitude = extras.getString("long");
+                        Log.d("AddImage", "Lat/Long" + latitude + "/" + longitude);
+                        Log.d("AddImage", "Image string" + image);
+                        Log.d("AddImage", "Hashed image" + Hashing.hashPassword(image, Hashing.SALT));
+                        //  Toast.makeText(this, "Lat/Long" + latitude + "/" + longitude+ ">>>>>" + image , Toast.LENGTH_SHORT).show();
+                        //Adding Progress bar
+                        progressBar =  (ProgressBar) findViewById(R.id.progressbar);
+                        progressBar.setVisibility(View.VISIBLE);
+                        uploadingImages(image,Hashing.hashPassword(image, Hashing.SALT) ,new VolleyCallback() {
+                            @Override
+                            public void onSuccess(String result) {
+                                //All good
+                                Log.d("uploadingImage", "image uploaded to the server :" + result);
+                                //Dismissing the progress bar
+                                Toast.makeText(addEvent.this, "Uploaded Successfully", Toast.LENGTH_SHORT).show();
+                                progressBar.setVisibility(View.INVISIBLE);
+
+                                setResult(RESULT_OK, getIntent());
+                                finish();
+    //                            String image_url ="http://192.168.3.103/data/"+Hashing.hashPassword(image, Hashing.SALT) ;
+    //                            //Adding the event data to the blockchain
+    //                            addingEvent(email, description, image_url, latitude, longitude, new VolleyCallback() {
+    //                                @Override
+    //                                public void onSuccess(String result) {
+    //
+    //                                }
+    //                            });
+
+
+                            }
+                        });
+                    }
+                    else {
+                        Toast.makeText(addEvent.this, "Please upload a media file!", Toast.LENGTH_SHORT).show();
+                    }
 
                 return true;
         }
