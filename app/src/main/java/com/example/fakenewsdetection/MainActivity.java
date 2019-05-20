@@ -321,7 +321,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
 
         //checking on Location permission
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(MainActivity.this, "Location Access already been granted! ", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(MainActivity.this, "Location Access already been granted! ", Toast.LENGTH_SHORT).show();
         }
         else {
             requestLocationPermissions();
@@ -407,8 +407,13 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
 
         //checking the Result from Add Event
         if (resultCode == RESULT_OK && requestCode == ADDEVENT_REQUEST) {
-            Toast.makeText(MainActivity.this,"Your Story is online!", Toast.LENGTH_LONG).show();
+            SnackBarMessage(R.string.addevent_success,getResources().getColor(R.color.colorGreen));
+           // Toast.makeText(MainActivity.this,"Your Story is online!", Toast.LENGTH_LONG).show();
         }
+        if (resultCode == RESULT_CANCELED && requestCode == ADDEVENT_REQUEST) {
+            SnackBarMessage(R.string.error,getResources().getColor(R.color.colorOrange));
+        }
+
 
     }
 

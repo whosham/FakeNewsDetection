@@ -5,11 +5,8 @@ require "conn.php";
 //Don't forget to make directory writable by www-data
 
 $image  = $_POST["image"] ?? "";
-
 $image_url  = $_POST["image_url"] ?? "";
-
 $action = $_POST["action"] ?? "";
-$username = $_POST["username"] ?? "";
 $upload_path="data/$image_url.jpg";
 
 

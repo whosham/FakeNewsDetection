@@ -25,4 +25,6 @@
     <string name="error_username_exists">Email Already Existed</string>
     <string name="Logout">Logout</string>
     <string name="logout_confirmation">Confirm Logging out?</string>
+    <string name="addevent_success">Your Story is online</string>
+    <string name="error">Error Something went wrong</string>
 </resources>
