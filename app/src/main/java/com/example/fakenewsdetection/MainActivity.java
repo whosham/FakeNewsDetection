@@ -18,6 +18,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
@@ -31,8 +32,10 @@ import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -59,10 +62,12 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
     private FloatingActionButton floatingActionButton;
     private BottomAppBar bottomAppBar;
     private Button querycc;
+
+    //private GridLayoutManager gridLayoutManager ;
     private RecyclerView recyclerView;
-    private GridLayoutManager gridLayoutManager ;
     private CustomAdapter adapter ;
-    private List<MyData> data_list ;
+    private ArrayList<MyData> data_list ;
+    private RequestQueue mRequestQueue;
 
 
     //Variables for activity request in order to track the status for every activity individually and
@@ -139,42 +144,45 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
 
 
         //Home Feed //
-//        recyclerView = findViewById(R.id.recyclerView) ;
-//        data_list =  new ArrayList<>() ;
-//        loadDataFromServer(0) ;
-//        //om response add
-//        adapter.notifyDataSetChanged();
-//
-//        gridLayoutManager = new GridLayoutManager(this,2);
-//        recyclerView.setLayoutManager(gridLayoutManager);
-//        //bind data to the recyclerview it self
-//        adapter = new CustomAdapter (this, data_list) ;
-//        recyclerView.setAdapter(adapter);
-//
-//        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//            @Override
-//            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-//                if (gridLayoutManager.findLastCompletelyVisibleItemPosition() == data_list.size()-1){
-//                    loadDataFromServer(data_list.get(data_list.size()-1).getId());
-//                }
-//            }
-//        });
+          recyclerView = findViewById(R.id.recyclerView) ;
+          recyclerView.setHasFixedSize(true);
+          recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
 
+          data_list =  new ArrayList<>() ;
+          mRequestQueue = Volley.newRequestQueue(MainActivity.this);
+          Log.d("mainactivity", "beforeparse");
+
+          //ParseJSON() ;
+
+            queryChainCode("52", new VolleyCallback() {
+                @Override
+                public void onSuccess(String result) {
+
+                    try {
+
+                        JSONArray array = new JSONArray(result);
+                        for (int i = 0; i < array.length(); i++) {
+                            JSONObject row = array.getJSONObject(i);
+                            String image_url= row.getString("image_url");
+                            String id= row.getString("id");
+                            String location = row.getString("location");
+                            Log.d("json", "row " + i + ":" + id + image_url + location);
+                            data_list.add(new MyData(id,image_url)) ;
+
+                        }
+                        adapter = new CustomAdapter(MainActivity.this, data_list) ;
+                        recyclerView.setAdapter(adapter);
 
 
-
-
-
-
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
 
         floatingActionButton = findViewById(R.id.fab);
         bottomAppBar = findViewById(R.id.bottomAppbar);
-
-
-
-
-
 
 
         //for handling fab
@@ -224,10 +232,82 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
 
     }
 
+    private void ParseJSON() {
+        Log.d("mainactivity", "2inside parse");
+        String url = "https://pixabay.com/api/?key=5303976-fd6581ad4ac165d1b75cc15b3&q=kitten&image_type=photo&pretty=true";
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    JSONArray jsonArray = response.getJSONArray("hits") ;
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject hit =  jsonArray.getJSONObject(i);
+                        String description = hit.getString("user");
+                        String imageUrl = hit.getString("webFormatURL");
+                        int id = hit.getInt("likes");
+                        Log.d("PARSEJSON", "image url " + imageUrl );
+                        data_list.add(new MyData(imageUrl,description)) ;
+
+                    }
+                    adapter = new CustomAdapter(MainActivity.this, data_list) ;
+                    recyclerView.setAdapter(adapter);
+
+                } catch (JSONException e) {
+                    Log.d("PARSEJSON", "ERRRORRr");
+                    e.printStackTrace();
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        });
+        mRequestQueue.add(request) ;
+    }
+
+
+    //Enroll user and getting JWT
+    public void queryChainCode(final String location, final MainActivity.VolleyCallback callback) {
+        Log.d("querychaincode", "location: " + location ) ;
+        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.3.103/query_cc.php",
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d("querychaincode", "check response" + String.valueOf(response) ) ;
+                        callback.onSuccess(String.valueOf(response.replaceAll("\\s+","")));
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //callback.onSuccess(String.valueOf(error));
+                error.printStackTrace();
+                Log.d("querychaincode", "Fail:" + String.valueOf(error) ) ;
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+
+                params.put("location" , location);
+                params.put("action" , "query_cc");
+//                params.put("orgName", "Org1" );
+//                params.put("Content-Type", "application/x-www-form-urlencoded");
+//                params.put("Accept", "application/json");
+//                params.put("Accept-Encoding", "utf-8");
+
+                return params;
+            }
+        };
+
+        Volley.newRequestQueue(MainActivity.this).add(request);
+    }
+
     private void updateLocation() {
     }
 
-    private void loadDataFromServer(int i) {
+    private void QueryBloclChain(int i) {
 
         //doing the network request fetch json data and
         // for (int i = - ; i <array.length() ; i++ )  { loiop add to list
