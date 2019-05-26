@@ -36,6 +36,8 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.fakenewsdetection.Utilities.Hashing;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -117,7 +119,7 @@ public class addEvent extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
 
-            Log.d("AddImage", "3 Image selection done");
+            Log.d("addEvent", "3 Image selection done");
             Uri path = data.getData();
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), path);
@@ -143,11 +145,12 @@ public class addEvent extends AppCompatActivity {
         switch (id) {
             case R.id.done_button:
 
-                Log.d("Add event Menu ", "Done pressed");
+                Log.d("addEvent", "Done pressed");
                 //Uploading the event to the server
                 //Loading email from shared preferences
                 SharedPreferences prefs = getSharedPreferences(MY_GLOBAL_PREFS, MODE_PRIVATE);
                 final String email = prefs.getString(activity_login.EMAIL_KEY, "");
+                final String JWT = prefs.getString(MainActivity.JWT, "");
                 Bundle extras = getIntent().getExtras();
 
 
@@ -155,13 +158,13 @@ public class addEvent extends AppCompatActivity {
                 final String description = eventDescriptionEditText.getText().toString();
                     if (extras != null && bitmap != null ) {
                         final String latitude, longitude,image;
-                        Log.d("Bitmap", "Bitmap>>>>" + bitmap);
+                        Log.d("addEvent", "Bitmap>>>>" + bitmap);
                         image = imageToString(bitmap);
                         latitude = extras.getString("lat");
                         longitude = extras.getString("long");
-                        Log.d("AddImage", "Lat/Long" + latitude + "/" + longitude);
-                        Log.d("AddImage", "Image string" + image);
-                        Log.d("AddImage", "Hashed image" + Hashing.hashPassword(image, Hashing.SALT));
+                        Log.d("addEvent", "Lat/Long" + latitude + "/" + longitude);
+                        Log.d("addEvent", "Image string" + image);
+                        Log.d("addEvent", "Hashed image" + Hashing.hashPassword(image, Hashing.SALT));
                         //  Toast.makeText(this, "Lat/Long" + latitude + "/" + longitude+ ">>>>>" + image , Toast.LENGTH_SHORT).show();
                         //Adding Progress bar
                         progressBar =  (ProgressBar) findViewById(R.id.progressbar);
@@ -170,21 +173,21 @@ public class addEvent extends AppCompatActivity {
                             @Override
                             public void onSuccess(String result) {
                                 //All good
-                                Log.d("uploadingImage", "image uploaded to the server :" + result);
+                                Log.d("addEvent", "image uploaded to the server :" + result);
                                 //Dismissing the progress bar
                                 Toast.makeText(addEvent.this, "Uploaded Successfully", Toast.LENGTH_SHORT).show();
+
                                 progressBar.setVisibility(View.INVISIBLE);
 
-                                setResult(RESULT_OK, getIntent());
-                                finish();
-    //                            String image_url ="http://192.168.3.103/data/"+Hashing.hashPassword(image, Hashing.SALT) ;
-    //                            //Adding the event data to the blockchain
-    //                            addingEvent(email, description, image_url, latitude, longitude, new VolleyCallback() {
-    //                                @Override
-    //                                public void onSuccess(String result) {
-    //
-    //                                }
-    //                            });
+                                String image_hash =Hashing.hashPassword(image, Hashing.SALT) ;
+                                //Adding the event data to the blockchain
+                                addingEvent(email, description, image_hash, latitude, longitude,JWT, new VolleyCallback() {
+                                    @Override
+                                    public void onSuccess(String result) {
+                                        setResult(RESULT_OK, getIntent());
+                                        finish();
+                                    }
+                                });
 
 
                             }
@@ -206,7 +209,7 @@ public class addEvent extends AppCompatActivity {
 
 
     private void uploadingImages(final String image,  final String image_url , final VolleyCallback callback){
-        Log.d("uploadingimage ", "inside uplaod image username/image" +"/"+ image + ">image_url " + image_url) ;
+        Log.d("addEvent", "inside uplaod image username/image" +"/"+ image + ">image_url " + image_url) ;
         StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.3.103/images_upload.php",
 
                 new Response.Listener<String>() {
@@ -214,7 +217,7 @@ public class addEvent extends AppCompatActivity {
                     public void onResponse(String response) {
                         //Log.d("TRACKCREATEGROUP", "3 calling groupdata") ;
                         try {
-                            Log.d("uploadingimage", "Success:" + String.valueOf(response) ) ;
+                            Log.d("addEvent", "Success:" + String.valueOf(response) ) ;
                             JSONObject jsonObject =  new JSONObject(response);
                             String Response= jsonObject.getString("response");
                             callback.onSuccess(Response);
@@ -225,7 +228,7 @@ public class addEvent extends AppCompatActivity {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.d("uplaodingimage", "Fail to upload:" + String.valueOf(error) ) ;
+                Log.d("addEvent", "Fail to upload:" + String.valueOf(error) ) ;
                 setResult(RESULT_CANCELED, getIntent());
                 finish();
             }
@@ -233,7 +236,7 @@ public class addEvent extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();
-                Log.d("uploadingimage", "Sending to server:" + "/"+ image + "/" + image_url) ;
+                Log.d("addEvent", "Sending to server:" + "/"+ image + "/" + image_url) ;
                 params.put("image", image);
                 params.put("image_url", image_url);
                 params.put("action", "upload_image" );
@@ -246,19 +249,43 @@ public class addEvent extends AppCompatActivity {
 
 
 
-    private void addingEvent(final String email, final String description , final String image_url , final String latitude , final String longitude,final VolleyCallback callback){
-        Log.d("addingEvent", "inside addingevent email url location " +"/"+ email + "/") ;
-        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.3.103/images_upload.php",
+    private void addingEvent(final String email, final String description , final String image_hash , final String latitude , final String longitude,final String JWT,final VolleyCallback callback){
+        Log.d("addEvent", "inside addingevent email url location " +"/"+ email + description +"/" + image_hash + "/" + latitude + "/"
+                + longitude + "/" + JWT) ;
 
+        final JSONObject jsonWholeObject  = new JSONObject();
+        JSONObject jsonLocation = new JSONObject();
+        JSONObject jsonEvent   = new JSONObject();
+        try {
+
+            jsonEvent.put("title", "fooandroid");
+
+
+            jsonLocation.put("latitude", "100");
+            jsonLocation.put("longitude", "100") ;
+
+            jsonEvent.put("location",jsonLocation) ;
+
+            jsonEvent.put("description", "Androidevent");
+
+            jsonWholeObject.put("args", jsonEvent );
+            Log.d("addEvent", "jsonEvent: " + String.valueOf(jsonWholeObject.get("args")) ) ;
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+
+        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.3.103:4000/channels/mychannel/chaincodes/mycc",
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        //Log.d("TRACKCREATEGROUP", "3 calling groupdata") ;
                         try {
-                            Log.d("addingEvent", "Success:" + String.valueOf(response) ) ;
-                            JSONObject jsonObject =  new JSONObject(response);
-                            String Response= jsonObject.getString("response");
-                            callback.onSuccess(Response);
+                            Log.d("addEvent", "Success adding event on BC:" + String.valueOf(response) ) ;
+                    //        JSONObject jsonObject =  new JSONObject(response);
+                     //       String Response= jsonObject.getString("response");
+                            callback.onSuccess(response);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -266,20 +293,36 @@ public class addEvent extends AppCompatActivity {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.d("addingEvent", "Fail to add Event:" + String.valueOf(error) ) ;
+                Log.d("addEvent", "Fail to add Event on BC:" + String.valueOf(error) ) ;
+                setResult(RESULT_CANCELED, getIntent());
+                finish();
             }
         }) {
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
+            protected Map<String, String> getParams()throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();
-                Log.d("addingEvent", "Sending event to server:" + "/"+"/" + image_url) ;
-                params.put("email", email);
-                params.put("description", description);
-                params.put("image_url", image_url);
-                params.put("latitude", latitude);
-                params.put("longitude", longitude);
-                params.put("action", "add_event" );
+                Log.d("addEvent", "Sending event to server:" + "/"+"/" + image_hash + "/" + JWT) ;
+                params.put("peers", "peer0.org1.example.com");
+                params.put("peers", "peer0.org2.example.com");
+                params.put("fcn", "addEvent");
+                try {
+                    params.put("args", "["+ String.valueOf(jsonWholeObject.get("args")) + "]");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
                 return params;
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers= new HashMap<String, String>();
+                String authorization= "Bearer " + JWT ;
+                headers.put("Accept","application/json");
+                headers.put("Accept-Encoding", "utf-8");
+                headers.put("Content-Type","application/x-www-form-urlencoded");
+                headers.put("authorization", authorization);
+                return headers;
             }
         };
 

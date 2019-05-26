@@ -15,6 +15,7 @@
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginBottom="50dp"
             android:background="@color/colorDarkBlue"
             android:paddingBottom="30dp"
             android:scrollbars="vertical">
@@ -44,11 +45,11 @@
             android:src="@drawable/ic_add"
             app:layout_anchor="@id/bottomAppbar" />
 
-        <Button
-            android:id="@+id/main_query"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="query" />
+        <!--<Button-->
+            <!--android:id="@+id/main_query"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="query" />-->
 
     </android.support.design.widget.CoordinatorLayout>
 

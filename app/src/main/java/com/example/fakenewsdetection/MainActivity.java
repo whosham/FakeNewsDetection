@@ -67,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
     private RecyclerView recyclerView;
     private CustomAdapter adapter ;
     private ArrayList<MyData> data_list ;
-    private RequestQueue mRequestQueue;
 
 
     //Variables for activity request in order to track the status for every activity individually and
@@ -75,9 +74,10 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
     private static final int SIGNIN_REQUEST = 1001;
     private static final int ADDEVENT_REQUEST = 1003;
     private static final int LOCATION_ACCESS_REQUEST = 1004;
+
     //creating a global shared preferences
     public static final String MY_GLOBAL_PREFS = "my_global_prefs" ;
-
+    public static final String JWT= "token";
     //google api client for Location
     private GoogleApiClient googleApiClient;
     private FusedLocationProviderClient fusedLocationProviderClient;
@@ -142,6 +142,27 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
 
         fusedLocationProviderClient= LocationServices.getFusedLocationProviderClient(this) ;
 
+        //Getting JWT and Enroll user
+        enrollUser(email, new VolleyCallback() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    JSONObject myJson = new JSONObject(result);
+                    Log.d("enrolluser", "before parsing " + result );
+                    String jwt= myJson.getString("token");
+                    Log.d("enrolluser", "after parsing " + jwt );
+                   //  Toast.makeText(MainActivity.this,"JWT:"+jwt, Toast.LENGTH_LONG).show();
+                    SharedPreferences.Editor editor =
+                            getSharedPreferences(MY_GLOBAL_PREFS,MODE_PRIVATE).edit();
+                    editor.putString(MainActivity.JWT,jwt);
+                    editor.apply();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+
 
         //Home Feed //
           recyclerView = findViewById(R.id.recyclerView) ;
@@ -150,10 +171,10 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
 
 
           data_list =  new ArrayList<>() ;
-          mRequestQueue = Volley.newRequestQueue(MainActivity.this);
           Log.d("mainactivity", "beforeparse");
 
-          //ParseJSON() ;
+
+
 
             queryChainCode("52", new VolleyCallback() {
                 @Override
@@ -202,69 +223,33 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
 
 
 
-        //enroll user
-        querycc= findViewById(R.id.main_query);
-        querycc.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                Log.d("enroluserbutton", "enroll user button pressed");
-                enrollUser(email, new VolleyCallback() {
-                    @Override
-                    public void onSuccess(String result) {
-                        try {
-                            JSONObject myJson = new JSONObject(result);
-                            String jwt= myJson.getString("token");
-                            Toast.makeText(MainActivity.this,"JWT:"+jwt, Toast.LENGTH_LONG).show();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-            }
-        });
+//        //enroll user
+//        querycc= findViewById(R.id.main_query);
+//        querycc.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//                Log.d("enroluserbutton", "enroll user button pressed");
+//                enrollUser(email, new VolleyCallback() {
+//                    @Override
+//                    public void onSuccess(String result) {
+//                        try {
+//                            JSONObject myJson = new JSONObject(result);
+//                            String jwt= myJson.getString("token");
+//                            Toast.makeText(MainActivity.this,"JWT:"+jwt, Toast.LENGTH_LONG).show();
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                });
+//            }
+//        });
 
         //Handling Options menu
         setSupportActionBar(bottomAppBar);
 
 
 
-
-    }
-
-    private void ParseJSON() {
-        Log.d("mainactivity", "2inside parse");
-        String url = "https://pixabay.com/api/?key=5303976-fd6581ad4ac165d1b75cc15b3&q=kitten&image_type=photo&pretty=true";
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try {
-                    JSONArray jsonArray = response.getJSONArray("hits") ;
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject hit =  jsonArray.getJSONObject(i);
-                        String description = hit.getString("user");
-                        String imageUrl = hit.getString("webFormatURL");
-                        int id = hit.getInt("likes");
-                        Log.d("PARSEJSON", "image url " + imageUrl );
-                        data_list.add(new MyData(imageUrl,description)) ;
-
-                    }
-                    adapter = new CustomAdapter(MainActivity.this, data_list) ;
-                    recyclerView.setAdapter(adapter);
-
-                } catch (JSONException e) {
-                    Log.d("PARSEJSON", "ERRRORRr");
-                    e.printStackTrace();
-                }
-
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
-            }
-        });
-        mRequestQueue.add(request) ;
     }
 
 
@@ -305,14 +290,6 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
     }
 
     private void updateLocation() {
-    }
-
-    private void QueryBloclChain(int i) {
-
-        //doing the network request fetch json data and
-        // for (int i = - ; i <array.length() ; i++ )  { loiop add to list
-        //Mydata data =  new Mydata(id,desc,imageLink )
-        //data_list.add(data)
     }
 
     //for handling menu
