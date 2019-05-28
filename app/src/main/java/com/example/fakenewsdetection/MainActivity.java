@@ -12,11 +12,13 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.bottomappbar.BottomAppBar;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
@@ -25,12 +27,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -51,7 +56,7 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
-public class MainActivity extends AppCompatActivity implements ConnectionCallbacks, OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity implements CustomAdapter.onItemClickListener,ConnectionCallbacks, OnConnectionFailedListener {
 
     //Test pushing from android studio local to remote master1
 
@@ -60,10 +65,11 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
     private FloatingActionButton floatingActionButton;
     private BottomAppBar bottomAppBar;
     private Button querycc;
+
+    //private GridLayoutManager gridLayoutManager ;
     private RecyclerView recyclerView;
-    private GridLayoutManager gridLayoutManager ;
     private CustomAdapter adapter ;
-    private List<MyData> data_list ;
+    private ArrayList<MyData> data_list ;
 
 
     //Variables for activity request in order to track the status for every activity individually and
@@ -71,14 +77,20 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
     private static final int SIGNIN_REQUEST = 1001;
     private static final int ADDEVENT_REQUEST = 1003;
     private static final int LOCATION_ACCESS_REQUEST = 1004;
+
     //creating a global shared preferences
     public static final String MY_GLOBAL_PREFS = "my_global_prefs" ;
-
+    public static final String JWT= "token";
     //google api client for Location
     private GoogleApiClient googleApiClient;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private String latitude,longitude;
     private int LOCATION_PERMISSION_CODE=1;
+
+    //variables for on click Events
+    public static final String EXTRA_URL = "imageUrl" ;
+    public static final String EXTRA_Description = "description" ;
+
 
 
     //Trying Background update of activity
@@ -89,9 +101,6 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
     public static MainActivity getInstance(){
         return instance ;
     }
-
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
         //checking Location permissions.
         //checking on Location permission
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(MainActivity.this, "Location Access already been granted! ", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(MainActivity.this, "Location Access already been granted! ", Toast.LENGTH_SHORT).show();
            // updateLocation();
         }
         else {
@@ -138,44 +147,70 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
 
         fusedLocationProviderClient= LocationServices.getFusedLocationProviderClient(this) ;
 
+        //Getting JWT and Enroll user
+        enrollUser(email, new VolleyCallback() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    JSONObject myJson = new JSONObject(result);
+                    Log.d("enrolluser", "before parsing " + result );
+                    String jwt= myJson.getString("token");
+                    Log.d("enrolluser", "after parsing " + jwt );
+                   //  Toast.makeText(MainActivity.this,"JWT:"+jwt, Toast.LENGTH_LONG).show();
+                    SharedPreferences.Editor editor =
+                            getSharedPreferences(MY_GLOBAL_PREFS,MODE_PRIVATE).edit();
+                    editor.putString(MainActivity.JWT,jwt);
+                    editor.apply();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+
 
         //Home Feed //
-//        recyclerView = findViewById(R.id.recyclerView) ;
-//        data_list =  new ArrayList<>() ;
-//        loadDataFromServer(0) ;
-//        //om response add
-//        adapter.notifyDataSetChanged();
-//
-//        gridLayoutManager = new GridLayoutManager(this,2);
-//        recyclerView.setLayoutManager(gridLayoutManager);
-//        //bind data to the recyclerview it self
-//        adapter = new CustomAdapter (this, data_list) ;
-//        recyclerView.setAdapter(adapter);
-//
-//        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//            @Override
-//            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-//                if (gridLayoutManager.findLastCompletelyVisibleItemPosition() == data_list.size()-1){
-//                    loadDataFromServer(data_list.get(data_list.size()-1).getId());
-//                }
-//            }
-//        });
+          recyclerView = findViewById(R.id.recyclerView) ;
+          recyclerView.setHasFixedSize(true);
+          recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+
+          data_list =  new ArrayList<>() ;
+          Log.d("mainactivity", "beforeparse");
 
 
 
 
+            queryChainCode("52", new VolleyCallback() {
+                @Override
+                public void onSuccess(String result) {
+
+                    try {
+
+                        JSONArray array = new JSONArray(result);
+                        for (int i = 0; i < array.length(); i++) {
+                            JSONObject row = array.getJSONObject(i);
+                            String image_url= row.getString("image_url");
+                            String id= row.getString("id");
+                            String location = row.getString("location");
+                            Log.d("json", "row " + i + ":" + id + image_url + location);
+                            data_list.add(new MyData(id,image_url)) ;
+
+                        }
+                        adapter = new CustomAdapter(MainActivity.this, data_list) ;
+                        recyclerView.setAdapter(adapter);
+                        // Implementing per click
+                        adapter.setOnItemClickListener(MainActivity.this);
 
 
-
-
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
 
         floatingActionButton = findViewById(R.id.fab);
         bottomAppBar = findViewById(R.id.bottomAppbar);
-
-
-
-
-
 
 
         //for handling fab
@@ -185,53 +220,59 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
 
                //Adding New Event
                 Intent addEvent = new Intent(MainActivity.this, addEvent.class);
+                addEvent.putExtra("lat", latitude) ;
+                addEvent.putExtra("long", longitude) ;
                 startActivityForResult(addEvent, ADDEVENT_REQUEST);
 
             }
         });
 
 
-
-
-        //enroll user
-        querycc= findViewById(R.id.main_query);
-        querycc.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                Log.d("enroluserbutton", "enroll user button pressed");
-                enrollUser(email, new VolleyCallback() {
-                    @Override
-                    public void onSuccess(String result) {
-                        try {
-                            JSONObject myJson = new JSONObject(result);
-                            String jwt= myJson.getString("token");
-                            Toast.makeText(MainActivity.this,"JWT:"+jwt, Toast.LENGTH_LONG).show();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-            }
-        });
-
         //Handling Options menu
         setSupportActionBar(bottomAppBar);
 
 
 
+    }
 
+
+    //Enroll user and getting JWT
+    public void queryChainCode(final String location, final MainActivity.VolleyCallback callback) {
+        Log.d("querychaincode", "location: " + location ) ;
+        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.3.103/query_cc.php",
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d("querychaincode", "check response" + String.valueOf(response) ) ;
+                        callback.onSuccess(String.valueOf(response.replaceAll("\\s+","")));
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //callback.onSuccess(String.valueOf(error));
+                error.printStackTrace();
+                Log.d("querychaincode", "Fail:" + String.valueOf(error) ) ;
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+
+                params.put("location" , location);
+                params.put("action" , "query_cc");
+//                params.put("orgName", "Org1" );
+//                params.put("Content-Type", "application/x-www-form-urlencoded");
+//                params.put("Accept", "application/json");
+//                params.put("Accept-Encoding", "utf-8");
+
+                return params;
+            }
+        };
+
+        Volley.newRequestQueue(MainActivity.this).add(request);
     }
 
     private void updateLocation() {
-    }
-
-    private void loadDataFromServer(int i) {
-
-        //doing the network request fetch json data and
-        // for (int i = - ; i <array.length() ; i++ )  { loiop add to list
-        //Mydata data =  new Mydata(id,desc,imageLink )
-        //data_list.add(data)
     }
 
     //for handling menu
@@ -320,7 +361,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
 
         //checking on Location permission
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(MainActivity.this, "Location Access already been granted! ", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(MainActivity.this, "Location Access already been granted! ", Toast.LENGTH_SHORT).show();
         }
         else {
             requestLocationPermissions();
@@ -354,8 +395,19 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d("Mainactivity", "Connection Failed");
     }
-//
-//
+
+
+    //Handling per click events.
+    @Override
+    public void onItemClick(int position) {
+        Intent detailedEvent = new Intent(this, DetailedEvent.class);
+        MyData clickedEvent = data_list.get(position) ;
+        detailedEvent.putExtra(EXTRA_URL, clickedEvent.getImage_url()) ;
+        detailedEvent.putExtra(EXTRA_Description, clickedEvent.getDescription()) ;
+        startActivity(detailedEvent);
+
+    }
+
     //Volley call back interface
     public interface VolleyCallback{
         void onSuccess(String result);
@@ -407,12 +459,31 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
 
         //checking the Result from Add Event
         if (resultCode == RESULT_OK && requestCode == ADDEVENT_REQUEST) {
-            Toast.makeText(MainActivity.this,"Your Story is online!", Toast.LENGTH_LONG).show();
+            SnackBarMessage(R.string.addevent_success,getResources().getColor(R.color.colorGreen));
+           // Toast.makeText(MainActivity.this,"Your Story is online!", Toast.LENGTH_LONG).show();
+        }
+        if (resultCode == RESULT_CANCELED && requestCode == ADDEVENT_REQUEST) {
+            SnackBarMessage(R.string.error,getResources().getColor(R.color.colorOrange));
         }
 
 
+    }
 
-
-
+    //Method for Snackbar
+    private void SnackBarMessage(int message,int  Color ) {
+        //showing a snackbar message to the user
+        Snackbar bar = Snackbar.make(findViewById(android.R.id.content),message, Snackbar.LENGTH_LONG)
+                .setActionTextColor(getResources().getColor(R.color.colorWhite))
+                .setAction("Dismiss", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // Handle user action
+                    }
+                });
+        View snackBarView = bar.getView();
+        snackBarView.setBackgroundColor(Color);
+        TextView tv = (TextView) bar.getView().findViewById(android.support.design.R.id.snackbar_text);
+        tv.setTextColor(getResources().getColor(R.color.colorWhite));
+        bar.show();
     }
 }

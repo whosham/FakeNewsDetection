@@ -41,12 +41,15 @@ public class LocationRequest extends AppCompatActivity {
         allowLocationAccess.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                requestLocationPermissions();
+
                 if (ContextCompat.checkSelfPermission(LocationRequest.this, Manifest.permission.ACCESS_FINE_LOCATION) ==
                         PackageManager.PERMISSION_GRANTED)
                 {
                     setResult(RESULT_OK, getIntent());
                     finish();
+                }
+                else{
+                    requestLocationPermissions();
                 }
             }
         });

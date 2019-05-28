@@ -15,4 +15,9 @@
     <color name="colorDarkBlue">#36465d</color>
     <color name="colorOrange">#d95e40</color>
     <color name="colorBlack">#000000</color>
+    <color name="colorlighgrey">#d3d3d3</color>
+    <color name="colorSilver">#C0C0C0</color>
+
+
+
 </resources>

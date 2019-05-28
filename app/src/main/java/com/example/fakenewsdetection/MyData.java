@@ -1,37 +1,37 @@
 package com.example.fakenewsdetection;
 
-class MyData {
+public class MyData {
 
-    private int id;
-    private String description, image_link ;
+  //  private int id;
+    private String description, image_url ;
 
-    public MyData(int id, String description, String image_link) {
-        this.id = id;
-        this.description = description;
-        this.image_link = image_link;
+    public MyData(String mdescription, String mimage_url) {
+    //    this.id = id;
+        this.description = mdescription;
+        this.image_url = mimage_url;
     }
 
-    public int getId() {
-        return id;
-    }
+//    public int getId() {
+//        return id;
+//    }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+//    public void setId(int id) {
+//        this.id = id;
+//    }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+//  //  public void setDescription(String description) {
+//        this.description = description;
+//    }
+
+    public String getImage_url() {
+        return image_url;
     }
 
-    public String getImage_link() {
-        return image_link;
-    }
-
-    public void setImage_link(String image_link) {
-        this.image_link = image_link;
-    }
+//    public void setImage_url(String image_url) {
+//        this.image_url = image_url;
+//    }
 }
