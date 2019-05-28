@@ -9,7 +9,8 @@
 
     <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/colorDarkBlue">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recyclerView"
@@ -17,7 +18,6 @@
             android:layout_height="match_parent"
             android:layout_marginBottom="50dp"
             android:background="@color/colorDarkBlue"
-            android:paddingBottom="30dp"
             android:scrollbars="vertical">
 
 
@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             style="@style/Widget.MaterialComponents.BottomAppBar"
             android:layout_gravity="bottom"
-            android:backgroundTint="@color/colorBlue"
+            android:backgroundTint="@color/colorDarkBlue"
             app:fabCradleRoundedCornerRadius="16dp"
             app:navigationIcon="@drawable/ic_menu_black_24dp"
 

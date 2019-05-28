@@ -17,8 +17,20 @@ import java.util.List;
 class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder> {
     private Context mcontext;
    // private List<MyData> my_data;
-
     private ArrayList<MyData> mmyData;
+
+    private onItemClickListener mListener;
+
+    public interface onItemClickListener {
+
+        void onItemClick(int position ) ;
+
+    }
+
+    public void setOnItemClickListener(onItemClickListener listener){
+        mListener=listener ;
+    }
+
 
    //  public CustomAdapter(Context context, List<MyData> my_data) {
    public CustomAdapter(Context context, ArrayList<MyData> myDataList) {
@@ -68,6 +80,21 @@ class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder> {
             description =  itemView.findViewById(R.id.event_text) ;
             imageView = itemView.findViewById(R.id.event_image) ;
 
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    if(mListener != null ){
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION){
+                            mListener.onItemClick(position);
+                        }
+                    }
+                }
+            }
+            );
         }
+
+
     }
 }

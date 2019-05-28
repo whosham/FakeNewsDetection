@@ -305,8 +305,9 @@ public class addEvent extends AppCompatActivity {
                 params.put("peers", "peer0.org1.example.com");
                 params.put("peers", "peer0.org2.example.com");
                 params.put("fcn", "addEvent");
+
                 try {
-                    params.put("args", "["+ String.valueOf(jsonWholeObject.get("args")) + "]");
+                    params.put("args", String.valueOf(jsonWholeObject.getString("args")));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -318,9 +319,9 @@ public class addEvent extends AppCompatActivity {
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> headers= new HashMap<String, String>();
                 String authorization= "Bearer " + JWT ;
-                headers.put("Accept","application/json");
-                headers.put("Accept-Encoding", "utf-8");
-                headers.put("Content-Type","application/x-www-form-urlencoded");
+               // headers.put("Content-Type","application/json");
+               headers.put("Accept-Encoding", "utf-8");
+               headers.put("Content-Type","application/x-www-form-urlencoded");
                 headers.put("authorization", authorization);
                 return headers;
             }

@@ -56,7 +56,7 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
-public class MainActivity extends AppCompatActivity implements ConnectionCallbacks, OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity implements CustomAdapter.onItemClickListener,ConnectionCallbacks, OnConnectionFailedListener {
 
     //Referencing UI elements
     private FloatingActionButton floatingActionButton;
@@ -84,6 +84,11 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
     private String latitude,longitude;
     private int LOCATION_PERMISSION_CODE=1;
 
+    //variables for on click Events
+    public static final String EXTRA_URL = "imageUrl" ;
+    public static final String EXTRA_Description = "description" ;
+
+
 
     //Trying Background update of activity
     private FusedLocationProviderClient fusedLocationClient1;
@@ -93,9 +98,6 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
     public static MainActivity getInstance(){
         return instance ;
     }
-
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
         //checking Location permissions.
         //checking on Location permission
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(MainActivity.this, "Location Access already been granted! ", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(MainActivity.this, "Location Access already been granted! ", Toast.LENGTH_SHORT).show();
            // updateLocation();
         }
         else {
@@ -194,6 +196,8 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
                         }
                         adapter = new CustomAdapter(MainActivity.this, data_list) ;
                         recyclerView.setAdapter(adapter);
+                        // Implementing per click
+                        adapter.setOnItemClickListener(MainActivity.this);
 
 
                     } catch (JSONException e) {
@@ -220,30 +224,6 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
             }
         });
 
-
-
-
-//        //enroll user
-//        querycc= findViewById(R.id.main_query);
-//        querycc.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-//                Log.d("enroluserbutton", "enroll user button pressed");
-//                enrollUser(email, new VolleyCallback() {
-//                    @Override
-//                    public void onSuccess(String result) {
-//                        try {
-//                            JSONObject myJson = new JSONObject(result);
-//                            String jwt= myJson.getString("token");
-//                            Toast.makeText(MainActivity.this,"JWT:"+jwt, Toast.LENGTH_LONG).show();
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                });
-//            }
-//        });
 
         //Handling Options menu
         setSupportActionBar(bottomAppBar);
@@ -411,6 +391,18 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallbac
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d("Mainactivity", "Connection Failed");
+    }
+
+
+    //Handling per click events.
+    @Override
+    public void onItemClick(int position) {
+        Intent detailedEvent = new Intent(this, DetailedEvent.class);
+        MyData clickedEvent = data_list.get(position) ;
+        detailedEvent.putExtra(EXTRA_URL, clickedEvent.getImage_url()) ;
+        detailedEvent.putExtra(EXTRA_Description, clickedEvent.getDescription()) ;
+        startActivity(detailedEvent);
+
     }
 
     //Volley call back interface
