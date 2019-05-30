@@ -18,6 +18,8 @@ import static com.example.fakenewsdetection.MainActivity.EXTRA_URL;
 
 public class DetailedEvent extends AppCompatActivity {
 
+    private static final int VOTING_REQUEST =1006;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,15 +36,34 @@ public class DetailedEvent extends AppCompatActivity {
         textView.setText(description);
 
         final ImageView upvote_button = findViewById(R.id.event_upvote_button_iv) ;
-        ImageView downvote_button = findViewById(R.id.event_downvote_button_iv) ;
+        final ImageView downvote_button = findViewById(R.id.event_downvote_button_iv) ;
 
         upvote_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Toast.makeText(DetailedEvent.this,"Upvoted!", Toast.LENGTH_LONG).show();
-                upvote_button.setColorFilter(getResources().getColor(R.color.colorGreen)) ;
+                //upvote_button.setColorFilter(getResources().getColor(R.color.colorGreen)) ;
+                //Call the voting activity
+                Intent voting = new Intent(DetailedEvent.this, Voting.class);
+                voting.putExtra("votetype", "Upvote!") ;
+                startActivityForResult(voting,VOTING_REQUEST);
             }
         });
+
+        downvote_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(DetailedEvent.this,"downvoted!", Toast.LENGTH_LONG).show();
+               // downvote_button.setColorFilter(getResources().getColor(R.color.colorRed)) ;
+                //Call the voting activity
+                Intent voting = new Intent(DetailedEvent.this, Voting.class);
+                voting.putExtra("votetype", "Downvote!") ;
+                startActivityForResult(voting,VOTING_REQUEST);
+            }
+        });
+
+
+
 
     }
 }

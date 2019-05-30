@@ -246,7 +246,6 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                //callback.onSuccess(String.valueOf(error));
                 error.printStackTrace();
                 Log.d("querychaincode", "Fail:" + String.valueOf(error) ) ;
             }
@@ -257,11 +256,6 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
 
                 params.put("location" , location);
                 params.put("action" , "query_cc");
-//                params.put("orgName", "Org1" );
-//                params.put("Content-Type", "application/x-www-form-urlencoded");
-//                params.put("Accept", "application/json");
-//                params.put("Accept-Encoding", "utf-8");
-
                 return params;
             }
         };
