@@ -120,4 +120,6 @@ The network will still be running at this point. Before starting the network man
 
 # Scenarios 
 
+![](images/1.png)
+
 
