@@ -120,6 +120,36 @@ The network will still be running at this point. Before starting the network man
 
 # Scenarios 
 
-![](images/1.png)
+**Note: Any Location operation will be verified before making the request by calling Karaki's Library.**
+
+## 1. Sending an event to the Blockchain
+
+### End point  
+```
+http://192.168.3.103:4000/channels/mychannel/chaincodes/mycc
+```
+### Request 
+```json 
+{
+  "description": "First Event",
+  "image_hash": "-3e584d8556ef6da2120e6f00e5bf15effa742c347c16ea2c.jpg",
+  "location":{
+    "latitude": "52" 
+    "longitude": "10"
+  }
+  "creator":"hesham@gmail.com"
+  "timestamp":"1559300653" 
+}
+
+``` 
+
+###  Response  
+
+
+
+![Add Event |small](images/addEvent.png) 
+
+
+
 
 
