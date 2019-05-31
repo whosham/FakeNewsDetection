@@ -117,3 +117,7 @@ curl -s -X GET \
 The network will still be running at this point. Before starting the network manually again, here are the commands which cleans the containers and artifacts.
 ./tearDown.sh 
 
+
+# Scenarios 
+
+
