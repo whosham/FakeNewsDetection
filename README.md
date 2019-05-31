@@ -9,16 +9,17 @@ cd fabric-samples/balance-transfer/
 NOTE: Bug fixed that prevents chaincode from being instantiated and it exits with Timeout error. 
 update timeout on app/instantiate-chaincode.js from 60000 to 120000 
 
----
+```
 //              let results = await channel.sendInstantiateProposal(request, 60000); //instantiate takes much longer
                 let results = await channel.sendInstantiateProposal(request, 120000); //instantiate takes much longer 
----
+```
 
 Once you have completed the above setup, you will have provisioned a local network with the following docker container configuration:
 
 * 2 CAs
 * A SOLO orderer
 * 4 peers (2 peers per Org)
+* 2 couch dbs 
 
 #### Artifacts
 * Crypto material has been generated using the **cryptogen** tool from Hyperledger Fabric and mounted to all peers, the orderering node and CA containers. More details regarding the cryptogen tool are available [here](http://hyperledger-fabric.readthedocs.io/en/latest/build_network.html#crypto-generator).
@@ -115,3 +116,4 @@ curl -s -X GET \
 
 The network will still be running at this point. Before starting the network manually again, here are the commands which cleans the containers and artifacts.
 ./tearDown.sh 
+
