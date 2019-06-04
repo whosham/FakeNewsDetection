@@ -145,7 +145,7 @@ public class Voting extends AppCompatActivity {
     }
 
     private void selectImage() {
-        
+
         Log.d("addEvent", "2 Inside Image selection done");
         Intent intent = new Intent();
         intent.setType("image/*");

@@ -29,9 +29,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.fakenewsdetection.Utilities.Hashing;
@@ -260,7 +262,6 @@ public class addEvent extends AppCompatActivity {
 
             jsonEvent.put("title", "fooandroid");
 
-
             jsonLocation.put("latitude", "52");
             jsonLocation.put("longitude", "10") ;
 
@@ -271,78 +272,95 @@ public class addEvent extends AppCompatActivity {
             jsonWholeObject.put("args", jsonEvent );
             Log.d("addEvent", "jsonEvent: " + String.valueOf(jsonWholeObject.get("args")) ) ;
 
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-
-        try {
-            String jsonargs = jsonWholeObject.getString("args") ;
-
-
-            jsonargs.getClass().getName();
-            JSONObject jsonobjargs = (JSONObject) jsonWholeObject.get("args");
-
-            Log.d("addEvent", " jsonWholeObject: " + jsonobjargs + "Types:" + jsonobjargs.getClass().getName() ) ;
-            Log.d("addEvent", "jsonargs : " + jsonargs + "Types:" + jsonargs.getClass().getName() ) ;
+            jsonWholeObject.put("fcn","addEvent") ;
+            jsonWholeObject.put("peers","[\"peer0.org1.example.com\",\"peer0.org2.example.com\"]");
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
+//        try {
+//            String jsonargs = jsonWholeObject.getString("args") ;
+//
+//            jsonargs.getClass().getName();
+//            JSONObject jsonobjargs = (JSONObject) jsonWholeObject.get("args");
+//
+//            Log.d("addEvent", " jsonWholeObject: " + jsonobjargs + "Types:" + jsonobjargs.getClass().getName() ) ;
+//            Log.d("addEvent", "jsonargs : " + jsonargs + "Types:" + jsonargs.getClass().getName() ) ;
+//
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.3.103:4000/channels/mychannel/chaincodes/mycc",
+//                new Response.Listener<String>() {
+//                    @Override
+//                    public void onResponse(String response) {
+//                        try {
+//                            Log.d("addEvent", "Success adding event on BC:" + String.valueOf(response) ) ;
+//                            callback.onSuccess(response);
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                }, new Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//                Log.d("addEvent", "Fail to add Event on BC:" + String.valueOf(error) ) ;
+//                setResult(RESULT_CANCELED, getIntent());
+//                finish();
+//            }
+//        })
 
-        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.3.103:4000/channels/mychannel/chaincodes/mycc",
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        try {
-                            Log.d("addEvent", "Success adding event on BC:" + String.valueOf(response) ) ;
-                    //        JSONObject jsonObject =  new JSONObject(response);
-                     //       String Response= jsonObject.getString("response");
-                            callback.onSuccess(response);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
+        Log.d("addEvent", "jsonWholeObject : " + jsonWholeObject + "Types:" + jsonWholeObject.getClass().getName() ) ;
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST,"http://192.168.3.103:4000/channels/mychannel/chaincodes/mycc",
+                jsonWholeObject , new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                callback.onSuccess(String.valueOf(response));
+            }
+        }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.d("addEvent", "Fail to add Event on BC:" + String.valueOf(error) ) ;
                 setResult(RESULT_CANCELED, getIntent());
                 finish();
             }
-        }) {
-            @Override
-            protected Map<String, String> getParams()throws AuthFailureError {
-                Map<String, String> params = new HashMap<>();
-                Log.d("addEvent", "Sending event to server:" + "/"+"/" + image_hash + "/" + JWT) ;
-                params.put("peers", "[\"peer0.org1.example.com\",\"peer0.org2.example.com\"]");
-                params.put("fcn", "addEvent");
+        })
 
-                try {
-                 //   params.put("args", String.valueOf(jsonWholeObject.getString("args")));
-                    JSONObject jsonobjargs = (JSONObject) jsonWholeObject.get("args");
-                    String jsonargs = jsonWholeObject.getString("args");
-                    params.put("args",jsonargs) ;
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                return params;
-            }
+        {
+//            @Override
+//            protected Map<String, String> getParams()throws AuthFailureError {
+//                Map<String, String> params = new HashMap<>();
+//                Log.d("addEvent", "Sending event to server:" + "/"+"/" + image_hash + "/" + JWT) ;
+//                params.put("peers", "[\"peer0.org1.example.com\",\"peer0.org2.example.com\"]");
+//                params.put("fcn", "addEvent");
+//
+//                try {
+//                 //   params.put("args", String.valueOf(jsonWholeObject.getString("args")));
+//                    JSONObject jsonobjargs = (JSONObject) jsonWholeObject.get("args");
+//                    String jsonargs = jsonWholeObject.getString("args");
+//                    params.put("args",jsonargs) ;
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//
+//                return params;
+//            }
 
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> headers= new HashMap<String, String>();
                 String authorization= "Bearer " + JWT ;
-               // headers.put("Content-type","application/json");
+               headers.put("Content-type","application/json");
                headers.put("Accept-Encoding", "utf-8");
-               headers.put("Content-Type","application/x-www-form-urlencoded");
-                headers.put("authorization", authorization);
-                return headers;
+//               headers.put("Content-Type","application/x-www-form-urlencoded");
+              headers.put("authorization", authorization);
+               return headers;
             }
         };
 
+        request.setRetryPolicy(new DefaultRetryPolicy(20 * 1000, 0,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         Volley.newRequestQueue(addEvent.this).add(request);
     }
 
