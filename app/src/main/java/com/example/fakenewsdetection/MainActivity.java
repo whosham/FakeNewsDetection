@@ -31,6 +31,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -61,7 +62,6 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
     //Referencing UI elements
     private FloatingActionButton floatingActionButton;
     private BottomAppBar bottomAppBar;
-    private Button querycc;
 
     //private GridLayoutManager gridLayoutManager ;
     private RecyclerView recyclerView;
@@ -78,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
     //creating a global shared preferences
     public static final String MY_GLOBAL_PREFS = "my_global_prefs" ;
     public static final String JWT= "token";
+    String email;
     //google api client for Location
     private GoogleApiClient googleApiClient;
     private FusedLocationProviderClient fusedLocationProviderClient;
@@ -106,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
 
         //Checking if user already logged in
         SharedPreferences prefs = getSharedPreferences(MainActivity.MY_GLOBAL_PREFS, MODE_PRIVATE);
-        final String email = prefs.getString(activity_login.EMAIL_KEY, "");
+        email = prefs.getString(activity_login.EMAIL_KEY, "");
         //if user didn't authenticated before direct to login screen
         if (TextUtils.isEmpty(email)) {
             Intent login = new Intent(MainActivity.this, activity_login.class);
@@ -144,67 +145,66 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
 
         fusedLocationProviderClient= LocationServices.getFusedLocationProviderClient(this) ;
 
+
         //Getting JWT and Enroll user
-        enrollUser(email, new VolleyCallback() {
-            @Override
-            public void onSuccess(String result) {
-                try {
-                    JSONObject myJson = new JSONObject(result);
-                    Log.d("enrolluser", "before parsing " + result );
-                    String jwt= myJson.getString("token");
-                    Log.d("enrolluser", "after parsing " + jwt );
-                   //  Toast.makeText(MainActivity.this,"JWT:"+jwt, Toast.LENGTH_LONG).show();
-                    SharedPreferences.Editor editor =
-                            getSharedPreferences(MY_GLOBAL_PREFS,MODE_PRIVATE).edit();
-                    editor.putString(MainActivity.JWT,jwt);
-                    editor.apply();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-
-
-        //Home Feed //
-          recyclerView = findViewById(R.id.recyclerView) ;
-          recyclerView.setHasFixedSize(true);
-          recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-
-          data_list =  new ArrayList<>() ;
-          Log.d("mainactivity", "beforeparse");
-
-
-
-
-            queryChainCode("52", new VolleyCallback() {
+        // Checking JWT
+        final String JWT = prefs.getString(MainActivity.JWT, "");
+        if (JWT.isEmpty()){
+            Log.d("enrolluser", "NO jwt found enrolling user");
+            enrollUser(email, new VolleyCallback() {
                 @Override
                 public void onSuccess(String result) {
-
                     try {
-
-                        JSONArray array = new JSONArray(result);
-                        for (int i = 0; i < array.length(); i++) {
-                            JSONObject row = array.getJSONObject(i);
-                            String image_url= row.getString("image_url");
-                            String id= row.getString("id");
-                            String location = row.getString("location");
-                            Log.d("json", "row " + i + ":" + id + image_url + location);
-                            data_list.add(new MyData(id,image_url)) ;
-
-                        }
-                        adapter = new CustomAdapter(MainActivity.this, data_list) ;
-                        recyclerView.setAdapter(adapter);
-                        // Implementing per click
-                        adapter.setOnItemClickListener(MainActivity.this);
-
+                        JSONObject myJson = new JSONObject(result);
+                        Log.d("enrolluser", "before parsing " + result );
+                        String jwt= myJson.getString("token");
+                        Log.d("enrolluser", "after parsing " + jwt );
+                        //  Toast.makeText(MainActivity.this,"JWT:"+jwt, Toast.LENGTH_LONG).show();
+                        SharedPreferences.Editor editor =
+                                getSharedPreferences(MY_GLOBAL_PREFS,MODE_PRIVATE).edit();
+                        editor.putString(MainActivity.JWT,jwt);
+                        editor.apply();
 
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
             });
+        }
+
+
+        //Home Feed //
+        recyclerView = findViewById(R.id.recyclerView) ;
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        data_list =  new ArrayList<>() ;
+
+        queryChainCode(52.0,10.0,new VolleyCallback() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    JSONArray array = new JSONArray(result);
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject row = array.getJSONObject(i);
+                      //  String image_url= row.getString("image_url");
+                        String id= row.getString("id");
+                       // String latitude = row.getString("latitude");
+                        //String longitude = row.getString("longitude");
+                        String description= row.getString("description");
+                        Log.d("queryChaincode", "row " + i + ":" + id + description);
+                        data_list.add(new MyData(id,description)) ;
+                    }
+                    adapter = new CustomAdapter(MainActivity.this, data_list) ;
+                    recyclerView.setAdapter(adapter);
+                    // Implementing per click
+                    adapter.setOnItemClickListener(MainActivity.this);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
 
         floatingActionButton = findViewById(R.id.fab);
         bottomAppBar = findViewById(R.id.bottomAppbar);
@@ -214,52 +214,54 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                //Adding New Event
                 Intent addEvent = new Intent(MainActivity.this, addEvent.class);
                 addEvent.putExtra("lat", latitude) ;
                 addEvent.putExtra("long", longitude) ;
                 startActivityForResult(addEvent, ADDEVENT_REQUEST);
-
             }
         });
 
-
         //Handling Options menu
         setSupportActionBar(bottomAppBar);
-
-
-
     }
 
 
     //Enroll user and getting JWT
-    public void queryChainCode(final String location, final MainActivity.VolleyCallback callback) {
-        Log.d("querychaincode", "location: " + location ) ;
-        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.3.103/query_cc.php",
+    public void queryChainCode(final double latitude, final double longitude, final VolleyCallback callback) {
+        SharedPreferences prefs = getSharedPreferences(MY_GLOBAL_PREFS, MODE_PRIVATE);
+        final String JWT = prefs.getString(MainActivity.JWT, "");
+        Log.d("querychaincode", "location: " + latitude + "/" + longitude ) ;
+
+        StringRequest request = new StringRequest(Request.Method.GET, "http://192.168.3.103:4000/channels/mychannel/chaincodes/mycc?peer=peer0.org1.example.com&fcn=queryEvents&args=%5B%22a%22%5D",
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        Log.d("querychaincode", "check response" + String.valueOf(response) ) ;
+                        Log.d("queryChaincode", "success to querychaincode:" + String.valueOf(response) ) ;
                         callback.onSuccess(String.valueOf(response.replaceAll("\\s+","")));
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                //callback.onSuccess(String.valueOf(error));
                 error.printStackTrace();
-                Log.d("querychaincode", "Fail:" + String.valueOf(error) ) ;
+                Log.d("queryChaincode", "Fail to querychaincode:" + String.valueOf(error) ) ;
             }
-        }) {
+        })
+        {
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> params = new HashMap<>();
-
-                params.put("location" , location);
-                params.put("action" , "query_cc");
-                return params;
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers= new HashMap<String, String>();
+                String authorization= "Bearer " + JWT ;
+                headers.put("Content-type","application/json");
+                headers.put("Accept-Encoding", "utf-8");
+                headers.put("authorization", authorization);
+                return headers;
             }
         };
 
+        request.setRetryPolicy(new DefaultRetryPolicy(20 * 1000, 0,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         Volley.newRequestQueue(MainActivity.this).add(request);
     }
 
@@ -308,20 +310,31 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
                 return true;
 
             case  R.id.bottom_app_location:
-//                fusedLocationClient1 = LocationServices.getFusedLocationProviderClient(this);
-//                fusedLocationClient1.getLastLocation()
-//                        .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-//                            @Override
-//                            public void onSuccess(Location location) {
-////                                if(location != null){
-//                                    latitude=String.valueOf(location.getLatitude());
-//                                    longitude=String.valueOf(location.getLongitude());
-                                    Toast.makeText(MainActivity.this, "Location is: " +latitude + "/" + longitude  , Toast.LENGTH_SHORT).show();
-//                                }
-//
-//                            }
-//                        });
+                Toast.makeText(MainActivity.this, "Location is: " +latitude + "/" + longitude  , Toast.LENGTH_SHORT).show();
+                return true;
 
+            case  R.id.bottom_app_refresh:
+                //Refreshing the JWT
+                //Getting JWT and Enroll user
+                enrollUser(email, new VolleyCallback() {
+                    @Override
+                    public void onSuccess(String result) {
+                        try {
+                            JSONObject myJson = new JSONObject(result);
+                            Log.d("enrolluser", "before parsing " + result );
+                            String jwt= myJson.getString("token");
+                            Log.d("enrolluser", "after parsing " + jwt );
+                            //  Toast.makeText(MainActivity.this,"JWT:"+jwt, Toast.LENGTH_LONG).show();
+                            SharedPreferences.Editor editor =
+                                    getSharedPreferences(MY_GLOBAL_PREFS,MODE_PRIVATE).edit();
+                            editor.putString(MainActivity.JWT,jwt);
+                            editor.apply();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                return true;
 
         }
 
@@ -330,13 +343,10 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
 
 
     //Location Handling Methods
-
     @Override
     protected void onStart() {
         super.onStart();
         googleApiClient.connect();
-
-
     }
 
     @Override
@@ -366,7 +376,6 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
                             latitude=String.valueOf(location.getLatitude());
                             longitude=String.valueOf(location.getLongitude());
                         }
-
                     }
                 });
     }
@@ -396,7 +405,6 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
         detailedEvent.putExtra(EXTRA_URL, clickedEvent.getImage_url()) ;
         detailedEvent.putExtra(EXTRA_Description, clickedEvent.getDescription()) ;
         startActivity(detailedEvent);
-
     }
 
     //Volley call back interface
@@ -425,7 +433,6 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();
-
                 params.put("username" , email);
                 params.put("orgName", "Org1" );
                 params.put("Content-Type", "application/x-www-form-urlencoded");
@@ -434,7 +441,6 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
                 return params;
             }
         };
-
         Volley.newRequestQueue(MainActivity.this).add(request);
     }
 

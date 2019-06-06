@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -159,11 +160,12 @@ public class addEvent extends AppCompatActivity {
                 eventDescriptionEditText= findViewById(R.id.editText);
                 final String description = eventDescriptionEditText.getText().toString();
                     if (extras != null && bitmap != null ) {
-                        final String latitude, longitude,image;
+                        final String image;
+                        final double latitude, longitude;
                         Log.d("addEvent", "Bitmap>>>>" + bitmap);
                         image = imageToString(bitmap);
-                        latitude = extras.getString("lat");
-                        longitude = extras.getString("long");
+                        latitude = extras.getDouble("lat");
+                        longitude = extras.getDouble("long");
                         Log.d("addEvent", "Lat/Long" + latitude + "/" + longitude);
                         Log.d("addEvent", "Image string" + image);
                         Log.d("addEvent", "Hashed image" + Hashing.hashPassword(image, Hashing.SALT));
@@ -186,8 +188,24 @@ public class addEvent extends AppCompatActivity {
                                 addingEvent(email, description, image_hash, latitude, longitude,JWT, new VolleyCallback() {
                                     @Override
                                     public void onSuccess(String result) {
-                                        setResult(RESULT_OK, getIntent());
-                                        finish();
+                                        Log.d("addEvent", "Response:" + result);
+                                        try {
+                                            JSONObject jsonResult = new JSONObject(result) ;
+                                            String stringResult = String.valueOf(jsonResult.get("success"));
+                                            Log.d("addEvent", "string:" + stringResult );
+                                            if(stringResult.equals("true")){
+                                                setResult(RESULT_OK, getIntent());
+                                                finish();
+                                            }
+                                            else {
+                                                setResult(RESULT_CANCELED, getIntent());
+                                                finish();
+                                            }
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+
+
                                     }
                                 });
 
@@ -251,7 +269,7 @@ public class addEvent extends AppCompatActivity {
 
 
 
-    private void addingEvent(final String email, final String description , final String image_hash , final String latitude , final String longitude,final String JWT,final VolleyCallback callback){
+    private void addingEvent(final String email, final String description , final String image_hash , final Double latitude , final Double longitude, final String JWT, final VolleyCallback callback){
         Log.d("addEvent", "inside addingevent email url location " +"/"+ email + description +"/" + image_hash + "/" + latitude + "/"
                 + longitude + "/" + JWT) ;
 
@@ -262,12 +280,13 @@ public class addEvent extends AppCompatActivity {
 
             jsonEvent.put("title", "fooandroid");
 
-            jsonLocation.put("latitude", "52");
-            jsonLocation.put("longitude", "10") ;
+            //make sure that latitude and longitude as float
+            jsonLocation.put("latitude", 52);
+            jsonLocation.put("longitude", 10) ;
 
             jsonEvent.put("location",jsonLocation) ;
 
-            jsonEvent.put("description", "Androidevent");
+            jsonEvent.put("description", description);
 
             jsonWholeObject.put("args", jsonEvent );
             Log.d("addEvent", "jsonEvent: " + String.valueOf(jsonWholeObject.get("args")) ) ;
@@ -278,38 +297,6 @@ public class addEvent extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-//        try {
-//            String jsonargs = jsonWholeObject.getString("args") ;
-//
-//            jsonargs.getClass().getName();
-//            JSONObject jsonobjargs = (JSONObject) jsonWholeObject.get("args");
-//
-//            Log.d("addEvent", " jsonWholeObject: " + jsonobjargs + "Types:" + jsonobjargs.getClass().getName() ) ;
-//            Log.d("addEvent", "jsonargs : " + jsonargs + "Types:" + jsonargs.getClass().getName() ) ;
-//
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.3.103:4000/channels/mychannel/chaincodes/mycc",
-//                new Response.Listener<String>() {
-//                    @Override
-//                    public void onResponse(String response) {
-//                        try {
-//                            Log.d("addEvent", "Success adding event on BC:" + String.valueOf(response) ) ;
-//                            callback.onSuccess(response);
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }, new Response.ErrorListener() {
-//            @Override
-//            public void onErrorResponse(VolleyError error) {
-//                Log.d("addEvent", "Fail to add Event on BC:" + String.valueOf(error) ) ;
-//                setResult(RESULT_CANCELED, getIntent());
-//                finish();
-//            }
-//        })
 
         Log.d("addEvent", "jsonWholeObject : " + jsonWholeObject + "Types:" + jsonWholeObject.getClass().getName() ) ;
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST,"http://192.168.3.103:4000/channels/mychannel/chaincodes/mycc",
@@ -326,36 +313,15 @@ public class addEvent extends AppCompatActivity {
                 finish();
             }
         })
-
         {
-//            @Override
-//            protected Map<String, String> getParams()throws AuthFailureError {
-//                Map<String, String> params = new HashMap<>();
-//                Log.d("addEvent", "Sending event to server:" + "/"+"/" + image_hash + "/" + JWT) ;
-//                params.put("peers", "[\"peer0.org1.example.com\",\"peer0.org2.example.com\"]");
-//                params.put("fcn", "addEvent");
-//
-//                try {
-//                 //   params.put("args", String.valueOf(jsonWholeObject.getString("args")));
-//                    JSONObject jsonobjargs = (JSONObject) jsonWholeObject.get("args");
-//                    String jsonargs = jsonWholeObject.getString("args");
-//                    params.put("args",jsonargs) ;
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//
-//                return params;
-//            }
-
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> headers= new HashMap<String, String>();
                 String authorization= "Bearer " + JWT ;
-               headers.put("Content-type","application/json");
-               headers.put("Accept-Encoding", "utf-8");
-//               headers.put("Content-Type","application/x-www-form-urlencoded");
-              headers.put("authorization", authorization);
-               return headers;
+                headers.put("Content-type","application/json");
+                headers.put("Accept-Encoding", "utf-8");
+                headers.put("authorization", authorization);
+                return headers;
             }
         };
 
