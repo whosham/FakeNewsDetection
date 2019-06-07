@@ -164,8 +164,8 @@ public class addEvent extends AppCompatActivity {
                         final double latitude, longitude;
                         Log.d("addEvent", "Bitmap>>>>" + bitmap);
                         image = imageToString(bitmap);
-                        latitude = extras.getDouble("lat");
-                        longitude = extras.getDouble("long");
+                        latitude = Double.parseDouble(extras.getString("lat"));
+                        longitude = Double.parseDouble(extras.getString("long"));
                         Log.d("addEvent", "Lat/Long" + latitude + "/" + longitude);
                         Log.d("addEvent", "Image string" + image);
                         Log.d("addEvent", "Hashed image" + Hashing.hashPassword(image, Hashing.SALT));
@@ -288,8 +288,12 @@ public class addEvent extends AppCompatActivity {
 
             jsonEvent.put("description", description);
 
+            jsonEvent.put("image", image_hash) ;
+
             jsonWholeObject.put("args", jsonEvent );
             Log.d("addEvent", "jsonEvent: " + String.valueOf(jsonWholeObject.get("args")) ) ;
+
+
 
             jsonWholeObject.put("fcn","addEvent") ;
             jsonWholeObject.put("peers","[\"peer0.org1.example.com\",\"peer0.org2.example.com\"]");

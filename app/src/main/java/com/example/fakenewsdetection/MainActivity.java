@@ -179,7 +179,13 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         data_list =  new ArrayList<>() ;
 
-        queryChainCode(52.0,10.0,new VolleyCallback() {
+
+//        double latitudeDouble = 0, longitudeouble=0;
+//        latitude = Double.parseDouble(String.valueOf(latitude));
+//        longitude= Double.parseDouble(String.valueOf(longitude));
+//
+
+        queryChainCode(52,10,new VolleyCallback() {
             @Override
             public void onSuccess(String result) {
                 try {
@@ -232,6 +238,7 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
         SharedPreferences prefs = getSharedPreferences(MY_GLOBAL_PREFS, MODE_PRIVATE);
         final String JWT = prefs.getString(MainActivity.JWT, "");
         Log.d("querychaincode", "location: " + latitude + "/" + longitude ) ;
+
 
         StringRequest request = new StringRequest(Request.Method.GET, "http://192.168.3.103:4000/channels/mychannel/chaincodes/mycc?peer=peer0.org1.example.com&fcn=queryEvents&args=%5B%22a%22%5D",
                 new Response.Listener<String>() {
