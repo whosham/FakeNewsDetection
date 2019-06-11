@@ -21,18 +21,17 @@
         android:theme="@style/AppTheme.NoActionBar"
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
-
-        <activity android:name=".DetailedEvent"
+        <activity android:name=".Voting"></activity>
+        <activity
+            android:name=".DetailedEvent"
+            android:label="Detailed Event"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait"
-            android:label="Detailed Event"
             android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" /> >
+                android:value=".MainActivity" />
         </activity>
-
-
         <activity android:name=".LocationRequest" />
 
         <meta-data

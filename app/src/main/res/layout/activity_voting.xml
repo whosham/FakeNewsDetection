@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".DetailedEvent">
+
+    <TextView
+        android:id="@+id/tv_voting_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Voting Type"
+        android:textColor="@color/colorBlack"
+        android:textStyle="bold"
+        android:textSize="32sp" />
+
+    <EditText
+        android:id="@+id/et_voting_description"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:hint="Add Comments"
+        android:src="@drawable/add_image"
+        android:textSize="48sp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="right">
+
+        <ImageButton
+            android:id="@+id/ib_voting_add_image"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="16dp"
+            android:padding="2dp"
+            android:src="@drawable/add_image"
+            android:tint="@color/colorGreen" />
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/iv_voting_selected_image"
+        android:layout_width="64dp"
+        android:layout_height="128dp"
+        android:layout_gravity="center_horizontal"
+        />
+
+    <Button
+        android:id="@+id/ib_voting_confirm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/colorBlue"
+        android:text="Confirm"
+        android:textColor="@color/colorWhite"
+        android:textSize="20sp" />
+
+    <ProgressBar
+        android:id="@+id/progressbar"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:visibility="invisible"
+        android:layout_gravity="center_horizontal">
+
+    </ProgressBar>
+
+
+</LinearLayout>
