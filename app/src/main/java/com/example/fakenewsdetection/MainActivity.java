@@ -339,7 +339,7 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
                     @Override
                     public void onResponse(String response) {
                         Log.d("queryChaincode", "success to querychaincode:" + String.valueOf(response) ) ;
-                        callback.onSuccess(String.valueOf(response.replaceAll("\\s+","")));
+                        callback.onSuccess(String.valueOf(response));
                     }
                 }, new Response.ErrorListener() {
             @Override

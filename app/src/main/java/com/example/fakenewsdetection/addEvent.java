@@ -212,7 +212,6 @@ public class addEvent extends AppCompatActivity {
                                             e.printStackTrace();
                                         }
 
-
                                     }
                                 });
 
@@ -288,8 +287,8 @@ public class addEvent extends AppCompatActivity {
             jsonEvent.put("title", "fooandroid");
 
             //make sure that latitude and longitude as float
-            jsonLocation.put("latitude", 52);
-            jsonLocation.put("longitude", 10) ;
+            jsonLocation.put("latitude",  52.2443);
+            jsonLocation.put("longitude", 10.5594) ;
 
             jsonEvent.put("location",jsonLocation) ;
 
