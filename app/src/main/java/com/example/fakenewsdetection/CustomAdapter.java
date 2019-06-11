@@ -11,7 +11,10 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder> {
@@ -50,19 +53,28 @@ class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
 
-      // MyData currentItem = myData.get(i);
-      //  String image_url = currentItem.getImage_url() ;
-
         MyData currentItem = mmyData.get(i) ;
         String imageUrl = currentItem.getImage_url();
-        String creatorName = currentItem.getDescription();
+        String description= currentItem.getDescription();
+        String id= currentItem.getId();
+        long  timestamp= Long.parseLong(currentItem.getTimestamp());
+        double trustworthiness= currentItem.getTrustworthiness();
+        double latitude = currentItem.getLatitude();
+        double longitude= currentItem.getLongitude();
 
-        viewHolder.description.setText(creatorName);
-        Glide.with(mcontext).load(imageUrl).into(viewHolder.imageView);
+
+        Date d = new Date(timestamp * 1000);
+        DateFormat df = new SimpleDateFormat("dd MMM yyyy hh:mm:ss zzz");
+        String mDate= (df.format(d));
 
 
-       // viewHolder.description.setText(mmyData.get(i).getDescription());
-       // Glide.with(mcontext).load(mmyData.get(i).getImage_url()).into(viewHolder.imageView);
+        viewHolder.id.setText(id);
+        viewHolder.description.setText(description);
+        viewHolder.timestamp.setText("Posted:"+mDate);
+        viewHolder.location.setText("Location"+latitude + "/" + longitude);
+        viewHolder.trustworthiness.setText("Trustworthiness: "+ trustworthiness );
+        Glide.with(mcontext).load("http://192.168.3.103/data/"+imageUrl+".jpg").into(viewHolder.imageView);
+
     }
 
     @Override
@@ -72,13 +84,18 @@ class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder> {
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        public TextView description ;
+        public TextView description,id,location,timestamp,trustworthiness;
         public ImageView imageView ;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            id= itemView.findViewById(R.id.event_eventid_tv);
             description =  itemView.findViewById(R.id.event_text) ;
             imageView = itemView.findViewById(R.id.event_image) ;
+            location= itemView.findViewById(R.id.event_location_tv);
+            trustworthiness=  itemView.findViewById(R.id.event_rank_tv);
+            timestamp= itemView.findViewById(R.id.event_timestamp_tv) ;
+
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

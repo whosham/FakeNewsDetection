@@ -44,7 +44,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.security.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -192,13 +199,20 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
                     JSONArray array = new JSONArray(result);
                     for (int i = 0; i < array.length(); i++) {
                         JSONObject row = array.getJSONObject(i);
-                      //  String image_url= row.getString("image_url");
+                        String image_url= row.getString("image");
                         String id= row.getString("id");
-                       // String latitude = row.getString("latitude");
-                        //String longitude = row.getString("longitude");
+                        JSONObject location= row.getJSONObject("location");
+
+                        double latitude = Double.parseDouble(location.getString("latitude"));
+                        double longitude = Double.parseDouble(location.getString("longitude"));
+                        String timestamp =row.getString("timestamp");
+                        double trustworthiness=Double.parseDouble(row.getString("trustworthiness"));
+
+
+
                         String description= row.getString("description");
-                        Log.d("queryChaincode", "row " + i + ":" + id + description);
-                        data_list.add(new MyData(id,description)) ;
+                        Log.d("queryChaincode", "row " + i + ":" + id + description+image_url+latitude+longitude+timestamp+trustworthiness);
+                        data_list.add(new MyData(id,description,image_url,latitude,longitude,timestamp,trustworthiness)) ;
                     }
                     adapter = new CustomAdapter(MainActivity.this, data_list) ;
                     recyclerView.setAdapter(adapter);
@@ -240,7 +254,27 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
         Log.d("querychaincode", "location: " + latitude + "/" + longitude ) ;
 
 
-        StringRequest request = new StringRequest(Request.Method.GET, "http://192.168.3.103:4000/channels/mychannel/chaincodes/mycc?peer=peer0.org1.example.com&fcn=queryEvents&args=%5B%22a%22%5D",
+        double latGte,latLte,longLte,longGte;
+        latGte=latitude-1;
+        latLte=latitude+1 ;
+        longGte=longitude-1;
+        longLte=longitude+1;
+
+
+
+        String selector="{ \"selector\":{ \"docType\":\"event\", \"location.latitude\":{ \"$gte\":"+latGte+", \"$lte\":"+latLte+" }, \"location.longitude\":{ \"$gte\":"+longGte+", \"$lte\":"+longLte+"} } }\n" ;
+        Log.d("querychaincode", "selector: " + selector ) ;
+
+        String url = null;
+        
+        try {
+            url = "http://192.168.3.103:4000/channels/mychannel/chaincodes/mycc?peer=peer0.org1.example.com&fcn=queryEvents&args=" + URLEncoder.encode(selector, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        Log.d("querychaincode", "url encoded: " + url ) ;
+
+        StringRequest request = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
