@@ -185,11 +185,18 @@ public class addEvent extends AppCompatActivity {
 
                                 String image_hash =Hashing.hashPassword(image, Hashing.SALT) ;
                                 //Adding the event data to the blockchain
+                                //Adding Progress bar
+                                progressBar =  (ProgressBar) findViewById(R.id.progressbar);
+                                progressBar.setVisibility(View.VISIBLE);
+
                                 addingEvent(email, description, image_hash, latitude, longitude,JWT, new VolleyCallback() {
                                     @Override
                                     public void onSuccess(String result) {
                                         Log.d("addEvent", "Response:" + result);
                                         try {
+
+                                            progressBar.setVisibility(View.INVISIBLE);
+
                                             JSONObject jsonResult = new JSONObject(result) ;
                                             String stringResult = String.valueOf(jsonResult.get("success"));
                                             Log.d("addEvent", "string:" + stringResult );
@@ -329,7 +336,7 @@ public class addEvent extends AppCompatActivity {
             }
         };
 
-        request.setRetryPolicy(new DefaultRetryPolicy(20 * 1000, 0,
+        request.setRetryPolicy(new DefaultRetryPolicy(30 * 1000, 0,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         Volley.newRequestQueue(addEvent.this).add(request);
     }

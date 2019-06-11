@@ -7,6 +7,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -44,6 +46,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.Timestamp;
@@ -51,9 +54,12 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -200,22 +206,73 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
             public void onSuccess(String result) {
                 try {
                     JSONArray array = new JSONArray(result);
-                    for (int i = 0; i < array.length(); i++) {
-                        JSONObject row = array.getJSONObject(i);
+                    JSONArray sortedJsonArray = new JSONArray();
+
+                    //sorting the data based on the time
+                    if(array.length()>1) {
+                        List<JSONObject> jsonValues = new ArrayList<JSONObject>();
+                        for (int i = 0; i < array.length(); i++) {
+                            jsonValues.add(array.getJSONObject(i));
+                        }
+                        Collections.sort( jsonValues, new Comparator<JSONObject>() {
+                            //You can change "Name" with "ID" if you want to sort by ID
+                            private static final String KEY_NAME = "timestamp";
+                            @SuppressLint("NewApi")
+                            @Override
+                            public int compare(JSONObject a, JSONObject b) {
+                                int valA,valB,compare=0;
+                                try {
+                                    valA = Integer.parseInt((a.getString(KEY_NAME)));
+                                    valB = Integer.parseInt((b.getString(KEY_NAME)));
+                                    compare = Integer.compare(valB, valA);
+                                    Log.d("sorting json", "ValA VALB " + valA +"/"+ valB ) ;
+                                }
+                                catch (JSONException e) {
+                                    //do something
+                                }
+                                return compare;
+                            }
+                        });
+
+                        for (int i = 0; i < array.length(); i++) {
+                            sortedJsonArray.put(jsonValues.get(i));
+                        }
+
+                    }
+
+                    Log.d("queryChaincode", "Sorted json array" + sortedJsonArray) ;
+
+                    for (int i = 0; i < sortedJsonArray.length(); i++) {
+                        JSONObject row = sortedJsonArray.getJSONObject(i);
                         String image_url= row.getString("image");
                         String id= row.getString("id");
                         JSONObject location= row.getJSONObject("location");
 
                         double latitude = Double.parseDouble(location.getString("latitude"));
                         double longitude = Double.parseDouble(location.getString("longitude"));
+                        String cityName=null;
                         String timestamp =row.getString("timestamp");
                         double trustworthiness=Double.parseDouble(row.getString("trustworthiness"));
 
 
 
+                        Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+                        List<Address> addresses = null;
+                        try {
+                            addresses = geocoder.getFromLocation(latitude, longitude, 1);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        if (addresses.size() > 0){
+                            cityName=addresses.get(0).getLocality();
+                            Log.d("querychaincode", "City name:"+ addresses.get(0).getLocality() ) ;
+                        }
+
+
+
                         String description= row.getString("description");
-                        Log.d("queryChaincode", "row " + i + ":" + id + description+image_url+latitude+longitude+timestamp+trustworthiness);
-                        data_list.add(new MyData(id,description,image_url,latitude,longitude,timestamp,trustworthiness)) ;
+                        Log.d("querychaincode", "row " + i + ":" + id + description+image_url+latitude+longitude+timestamp+trustworthiness);
+                        data_list.add(new MyData(id,description,image_url,latitude,longitude,cityName,timestamp,trustworthiness)) ;
                     }
                     adapter = new CustomAdapter(MainActivity.this, data_list) ;
                     recyclerView.setAdapter(adapter);
