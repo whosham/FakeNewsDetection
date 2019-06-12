@@ -23,6 +23,7 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="100dp"
+                android:layout_marginBottom="8dp"
                 android:orientation="vertical">
 
                 <TextView
@@ -31,9 +32,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="4dp"
                     android:text="event_id"
+                    android:textColor="@color/colorWhite"
                     android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/colorWhite" />
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/event_rank_tv"
@@ -41,9 +42,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
                     android:text="Event Rank"
+                    android:textColor="@color/colorWhite"
                     android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/colorWhite"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/event_location_tv"
@@ -51,9 +52,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
                     android:text="Event location"
+                    android:textColor="@color/colorWhite"
                     android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/colorWhite"/>
+                    android:textStyle="bold" />
 
 
             </LinearLayout>
@@ -61,22 +62,25 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/event_text"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
                     android:text="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
-                    android:textSize="30sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/colorWhite" />
+                    android:textColor="@color/colorWhite"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
 
                 <ImageView
                     android:id="@+id/event_image"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="200dp"
-                    android:padding="2dp" />
+                    android:padding="2dp"
+                    android:scaleType="center" />
 
             </LinearLayout>
 
@@ -85,6 +89,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="4dp"
+                android:layout_marginTop="4dp"
                 android:text="timestamp"
                 android:textColor="@color/colorWhite"
                 android:textSize="16sp"

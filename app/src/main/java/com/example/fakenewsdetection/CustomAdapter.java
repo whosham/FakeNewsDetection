@@ -60,21 +60,18 @@ class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder> {
         String imageUrl = currentItem.getImage_url();
         String description= currentItem.getDescription();
         String id= currentItem.getId();
-        long  timestamp= Long.parseLong(currentItem.getTimestamp());
+        String timestamp = currentItem.getTimestamp();
         double trustworthiness= currentItem.getTrustworthiness();
         double latitude = currentItem.getLatitude();
         double longitude= currentItem.getLongitude();
         String cityName= currentItem.getCityName();
 
-        Date d = new Date(timestamp * 1000);
-        DateFormat df = new SimpleDateFormat("dd MMM yyyy HH:mm:ss zzz");
-        String mDate= (df.format(d));
 
 
 
         viewHolder.id.setText(id);
         viewHolder.description.setText(description);
-        viewHolder.timestamp.setText("Posted: "+mDate);
+        viewHolder.timestamp.setText("Posted: "+timestamp);
         viewHolder.location.setText("Location: " +cityName+" " +latitude + "/" + longitude);
         viewHolder.trustworthiness.setText("Trustworthiness: "+ trustworthiness );
         Glide.with(mcontext).load("http://192.168.3.103/data/"+imageUrl+".jpg").into(viewHolder.imageView);
