@@ -7,6 +7,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -44,6 +46,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.Timestamp;
@@ -51,9 +54,12 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -96,8 +102,13 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
     private int LOCATION_PERMISSION_CODE=1;
 
     //variables for on click Events
-    public static final String EXTRA_URL = "imageUrl" ;
+    public static final String EXTRA_EVENT_ID = "id" ;
+    public static final String EXTRA_IMAGE_URL = "image" ;
     public static final String EXTRA_Description = "description" ;
+    public static final String EXTRA_LOCATION = "location" ;
+    public static final String EXTRA_TIMESTAMP = "timestamp" ;
+    public static final String EXTRA_TRUSTWORTHINESS  = "trustworthiness" ;
+
 
 
 
@@ -200,22 +211,80 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
             public void onSuccess(String result) {
                 try {
                     JSONArray array = new JSONArray(result);
-                    for (int i = 0; i < array.length(); i++) {
-                        JSONObject row = array.getJSONObject(i);
+                    JSONArray sortedJsonArray = new JSONArray();
+
+                    //sorting the data based on the time
+                    //if(array.length()>1) {
+                        List<JSONObject> jsonValues = new ArrayList<JSONObject>();
+                        for (int i = 0; i < array.length(); i++) {
+                            jsonValues.add(array.getJSONObject(i));
+                        }
+                        Collections.sort( jsonValues, new Comparator<JSONObject>() {
+                            //You can change "Name" with "ID" if you want to sort by ID
+                            private static final String KEY_NAME = "timestamp";
+                            @SuppressLint("NewApi")
+                            @Override
+                            public int compare(JSONObject a, JSONObject b) {
+                                int valA,valB,compare=0;
+                                try {
+                                    valA = Integer.parseInt((a.getString(KEY_NAME)));
+                                    valB = Integer.parseInt((b.getString(KEY_NAME)));
+                                    compare = Integer.compare(valB, valA);
+                                    Log.d("sorting json", "ValA VALB " + valA +"/"+ valB ) ;
+                                }
+                                catch (JSONException e) {
+                                    //do something
+                                }
+                                return compare;
+                            }
+                        });
+
+                        for (int i = 0; i < array.length(); i++) {
+                            sortedJsonArray.put(jsonValues.get(i));
+                        }
+
+                  //  }
+
+                    Log.d("queryChaincode", "Sorted json array" + sortedJsonArray) ;
+
+                    for (int i = 0; i < sortedJsonArray.length(); i++) {
+                        JSONObject row = sortedJsonArray.getJSONObject(i);
                         String image_url= row.getString("image");
                         String id= row.getString("id");
                         JSONObject location= row.getJSONObject("location");
 
                         double latitude = Double.parseDouble(location.getString("latitude"));
                         double longitude = Double.parseDouble(location.getString("longitude"));
+                        String cityName=null;
                         String timestamp =row.getString("timestamp");
                         double trustworthiness=Double.parseDouble(row.getString("trustworthiness"));
 
 
 
+                        //processing the time stamp and convert it to a readable date.
+                        long ts= Long.parseLong(timestamp);
+                        Date d = new Date(ts * 1000);
+                        DateFormat df = new SimpleDateFormat("dd MMM yyyy HH:mm:ss zzz");
+                        String mDate= (df.format(d));
+
+
+                        Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+                        List<Address> addresses = null;
+                        try {
+                            addresses = geocoder.getFromLocation(latitude, longitude, 1);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        if (addresses.size() > 0){
+                            cityName=addresses.get(0).getLocality();
+                            Log.d("querychaincode", "City name:"+ addresses.get(0).getLocality() ) ;
+                        }
+
+
+
                         String description= row.getString("description");
-                        Log.d("queryChaincode", "row " + i + ":" + id + description+image_url+latitude+longitude+timestamp+trustworthiness);
-                        data_list.add(new MyData(id,description,image_url,latitude,longitude,timestamp,trustworthiness)) ;
+                        Log.d("querychaincode", "row " + i + ":" + id + description+image_url+latitude+longitude+timestamp+trustworthiness);
+                        data_list.add(new MyData(id,description,image_url,latitude,longitude,cityName,mDate,trustworthiness)) ;
                     }
                     adapter = new CustomAdapter(MainActivity.this, data_list) ;
                     recyclerView.setAdapter(adapter);
@@ -250,7 +319,6 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
     }
 
 
-    //Enroll user and getting JWT
     public void queryChainCode(final double latitude, final double longitude, final VolleyCallback callback) {
         SharedPreferences prefs = getSharedPreferences(MY_GLOBAL_PREFS, MODE_PRIVATE);
         final String JWT = prefs.getString(MainActivity.JWT, "");
@@ -282,7 +350,7 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
                     @Override
                     public void onResponse(String response) {
                         Log.d("queryChaincode", "success to querychaincode:" + String.valueOf(response) ) ;
-                        callback.onSuccess(String.valueOf(response.replaceAll("\\s+","")));
+                        callback.onSuccess(String.valueOf(response));
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -304,7 +372,7 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
             }
         };
 
-        request.setRetryPolicy(new DefaultRetryPolicy(20 * 1000, 0,
+        request.setRetryPolicy(new DefaultRetryPolicy(30 * 1000, 0,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         Volley.newRequestQueue(MainActivity.this).add(request);
     }
@@ -380,7 +448,17 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
                 });
                 return true;
 
+            case  R.id.bottom_app_home:
+
+                finish();
+                startActivity(getIntent());
+                return true;
+
         }
+
+
+
+
 
         return super.onOptionsItemSelected(item);
     }
@@ -446,8 +524,13 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
     public void onItemClick(int position) {
         Intent detailedEvent = new Intent(this, DetailedEvent.class);
         MyData clickedEvent = data_list.get(position) ;
-        detailedEvent.putExtra(EXTRA_URL, clickedEvent.getImage_url()) ;
+        detailedEvent.putExtra(EXTRA_IMAGE_URL, clickedEvent.getImage_url()) ;
         detailedEvent.putExtra(EXTRA_Description, clickedEvent.getDescription()) ;
+        detailedEvent.putExtra(EXTRA_EVENT_ID, clickedEvent.getId()) ;
+        detailedEvent.putExtra(EXTRA_LOCATION, clickedEvent.getCityName()) ;
+        detailedEvent.putExtra(EXTRA_TIMESTAMP, clickedEvent.getTimestamp()) ;
+        detailedEvent.putExtra(EXTRA_TRUSTWORTHINESS,clickedEvent.getTrustworthiness()) ;
+
         startActivity(detailedEvent);
     }
 

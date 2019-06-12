@@ -8,68 +8,99 @@
     tools:context=".DetailedEvent">
 
     <ImageView
-        android:id="@+id/iv_detail"
+        android:id="@+id/detailed_image_iv"
         android:layout_width="match_parent"
         android:layout_height="300dp"
+        android:scaleType="center"
         android:src="@drawable/add_image" />
 
     <TextView
-        android:id="@+id/tv_location_detail"
+        android:id="@+id/detailed_eventid_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginLeft="4dp"
+        android:text="event_id"
+        android:textColor="@color/colorBlack"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/detailed_rank_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="4dp"
+        android:text="Event Rank"
+        android:textColor="@color/colorBlack"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/detailed_location_iv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="4dp"
         android:text="Location"
         android:textColor="@color/colorBlack"
         android:textSize="16sp" />
 
-    <LinearLayout
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    <TextView
+        android:id="@+id/detailed_timestamp_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="4dp"
+        android:text="timestamp"
+        android:textColor="@color/colorBlack"
+        android:textSize="16sp"
+        android:textStyle="italic" />
 
-        <ImageView
-            android:id="@+id/event_upvote_iv"
-            android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:layout_marginLeft="16dp"
-            android:padding="2dp"
-            android:src="@drawable/ic_thumb_up"
-            android:tint="@color/colorGreen" />
+    <!--<LinearLayout-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:orientation="horizontal">-->
 
-        <TextView
-            android:id="@+id/event_upvote_counts"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:text="999"
+        <!--<ImageView-->
+            <!--android:id="@+id/event_upvote_iv"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="32dp"-->
+            <!--android:layout_marginLeft="16dp"-->
+            <!--android:padding="2dp"-->
+            <!--android:src="@drawable/ic_thumb_up"-->
+            <!--android:tint="@color/colorGreen" />-->
 
-            android:textSize="20sp" />
+        <!--<TextView-->
+            <!--android:id="@+id/event_upvote_counts"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginLeft="8dp"-->
+            <!--android:text="999"-->
 
-        <ImageView
-            android:id="@+id/event_downvote_iv"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginLeft="16dp"
-            android:backgroundTint="@color/colorPurple"
-            android:padding="2dp"
-            android:src="@drawable/ic_thumb_down"
-            android:tint="@color/colorOrange" />
+            <!--android:textSize="20sp" />-->
 
-        <TextView
-            android:id="@+id/event_downvotes_counts"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:text="999"
-            android:textSize="20sp" />
+        <!--<ImageView-->
+            <!--android:id="@+id/event_downvote_iv"-->
+            <!--android:layout_width="32dp"-->
+            <!--android:layout_height="32dp"-->
+            <!--android:layout_marginLeft="16dp"-->
+            <!--android:backgroundTint="@color/colorPurple"-->
+            <!--android:padding="2dp"-->
+            <!--android:src="@drawable/ic_thumb_down"-->
+            <!--android:tint="@color/colorOrange" />-->
 
-    </LinearLayout>
+        <!--<TextView-->
+            <!--android:id="@+id/event_downvotes_counts"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginLeft="8dp"-->
+            <!--android:text="999"-->
+            <!--android:textSize="20sp" />-->
+
+    <!--</LinearLayout>-->
 
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
         android:orientation="horizontal">
 
         <ImageView
@@ -94,12 +125,22 @@
     </LinearLayout>
 
     <TextView
-        android:id="@+id/tv_description_detail"
+        android:id="@+id/detailed_description_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginTop="16dp"
         android:text="Description"
+        android:textColor="@color/colorBlack"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/detailed_assessment_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="16dp"
+        android:text="Assessment"
         android:textColor="@color/colorBlack"
         android:textSize="20sp" />
 

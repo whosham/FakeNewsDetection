@@ -1,6 +1,8 @@
 package com.example.fakenewsdetection;
 
 import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -16,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder> {
     private Context mcontext;
@@ -57,21 +60,19 @@ class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder> {
         String imageUrl = currentItem.getImage_url();
         String description= currentItem.getDescription();
         String id= currentItem.getId();
-        long  timestamp= Long.parseLong(currentItem.getTimestamp());
+        String timestamp = currentItem.getTimestamp();
         double trustworthiness= currentItem.getTrustworthiness();
         double latitude = currentItem.getLatitude();
         double longitude= currentItem.getLongitude();
+        String cityName= currentItem.getCityName();
 
 
-        Date d = new Date(timestamp * 1000);
-        DateFormat df = new SimpleDateFormat("dd MMM yyyy hh:mm:ss zzz");
-        String mDate= (df.format(d));
 
 
         viewHolder.id.setText(id);
         viewHolder.description.setText(description);
-        viewHolder.timestamp.setText("Posted:"+mDate);
-        viewHolder.location.setText("Location"+latitude + "/" + longitude);
+        viewHolder.timestamp.setText("Posted: "+timestamp);
+        viewHolder.location.setText("Location: " +cityName+" " +latitude + "/" + longitude);
         viewHolder.trustworthiness.setText("Trustworthiness: "+ trustworthiness );
         Glide.with(mcontext).load("http://192.168.3.103/data/"+imageUrl+".jpg").into(viewHolder.imageView);
 

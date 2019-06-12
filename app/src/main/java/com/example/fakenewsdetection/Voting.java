@@ -38,7 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.example.fakenewsdetection.MainActivity.EXTRA_Description;
-import static com.example.fakenewsdetection.MainActivity.EXTRA_URL;
+
 
 public class Voting extends AppCompatActivity {
 
