@@ -643,8 +643,6 @@ public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         if (resultCode == RESULT_CANCELED && requestCode == ADDEVENT_REQUEST) {
             SnackBarMessage(R.string.error,getResources().getColor(R.color.colorOrange));
         }
-
-
     }
 
     //Method for Snackbar

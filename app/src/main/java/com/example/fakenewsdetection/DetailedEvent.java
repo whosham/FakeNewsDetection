@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.location.Address;
 import android.location.Geocoder;
+import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -54,7 +56,7 @@ import static com.example.fakenewsdetection.MainActivity.MY_GLOBAL_PREFS;
 public class DetailedEvent extends AppCompatActivity {
 
     private static final int VOTING_REQUEST =1006;
-
+    String eventId;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,7 +65,7 @@ public class DetailedEvent extends AppCompatActivity {
         Intent intent = getIntent() ;
         String imageUrl = intent.getStringExtra(EXTRA_IMAGE_URL) ;
         String description = intent.getStringExtra(EXTRA_Description) ;
-        String eventId = intent.getStringExtra(EXTRA_EVENT_ID) ;
+        eventId = intent.getStringExtra(EXTRA_EVENT_ID) ;
         String timestamp = intent.getStringExtra(EXTRA_TIMESTAMP) ;
         String location = intent.getStringExtra(EXTRA_LOCATION) ;
         String trustworthiness = intent.getStringExtra(EXTRA_TRUSTWORTHINESS) ;
@@ -117,10 +119,6 @@ public class DetailedEvent extends AppCompatActivity {
 
 
 
-
-
-
-
         upvote_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -129,6 +127,7 @@ public class DetailedEvent extends AppCompatActivity {
                 //Call the voting activity
                 Intent voting = new Intent(DetailedEvent.this, Voting.class);
                 voting.putExtra("votetype", "Upvote!") ;
+                voting.putExtra("eventid", eventId) ;
                 startActivityForResult(voting,VOTING_REQUEST);
             }
         });
@@ -141,10 +140,25 @@ public class DetailedEvent extends AppCompatActivity {
                 //Call the voting activity
                 Intent voting = new Intent(DetailedEvent.this, Voting.class);
                 voting.putExtra("votetype", "Downvote!") ;
+                voting.putExtra("eventid", eventId) ;
                 startActivityForResult(voting,VOTING_REQUEST);
             }
         });
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        //checking the Result from Add Event
+        if (resultCode == RESULT_OK && requestCode == VOTING_REQUEST) {
+            SnackBarMessage(R.string.votingResult,getResources().getColor(R.color.colorGreen));
+            // Toast.makeText(MainActivity.this,"Your Story is online!", Toast.LENGTH_LONG).show();
+        }
+        if (resultCode == RESULT_CANCELED && requestCode == VOTING_REQUEST) {
+            SnackBarMessage(R.string.error,getResources().getColor(R.color.colorOrange));
+        }
     }
 
 
@@ -199,4 +213,21 @@ public class DetailedEvent extends AppCompatActivity {
         Volley.newRequestQueue(DetailedEvent.this).add(request);
     }
 
+    //Method for Snackbar
+    private void SnackBarMessage(int message,int  Color ) {
+        //showing a snackbar message to the user
+        Snackbar bar = Snackbar.make(findViewById(android.R.id.content),message, Snackbar.LENGTH_LONG)
+                .setActionTextColor(getResources().getColor(R.color.colorWhite))
+                .setAction("Dismiss", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // Handle user action
+                    }
+                });
+        View snackBarView = bar.getView();
+        snackBarView.setBackgroundColor(Color);
+        TextView tv = (TextView) bar.getView().findViewById(android.support.design.R.id.snackbar_text);
+        tv.setTextColor(getResources().getColor(R.color.colorWhite));
+        bar.show();
+    }
 }
