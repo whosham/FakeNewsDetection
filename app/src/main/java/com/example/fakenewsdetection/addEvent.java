@@ -161,18 +161,24 @@ public class addEvent extends AppCompatActivity {
                 final String description = eventDescriptionEditText.getText().toString();
                     if (extras != null && bitmap != null ) {
                         final String image;
-                        final double latitude, longitude;
+                        double latitude = 0, longitude=0;
                         Log.d("addEvent", "Bitmap>>>>" + bitmap);
                         image = imageToString(bitmap);
-                        latitude = Double.parseDouble(extras.getString("lat"));
-                        longitude = Double.parseDouble(extras.getString("long"));
-                        Log.d("addEvent", "Lat/Long" + latitude + "/" + longitude);
-                        Log.d("addEvent", "Image string" + image);
-                        Log.d("addEvent", "Hashed image" + Hashing.hashPassword(image, Hashing.SALT));
+                        try {
+                            latitude = Double.parseDouble(extras.getString("lat"));
+                            longitude = Double.parseDouble(extras.getString("long"));
+                            Log.d("addEvent", "Lat/Long" + latitude + "/" + longitude);
+                            Log.d("addEvent", "Image string" + image);
+                            Log.d("addEvent", "Hashed image" + Hashing.hashPassword(image, Hashing.SALT));
+                        } catch (NumberFormatException e) {
+                            e.printStackTrace();
+                        }
                         //  Toast.makeText(this, "Lat/Long" + latitude + "/" + longitude+ ">>>>>" + image , Toast.LENGTH_SHORT).show();
                         //Adding Progress bar
                         progressBar =  (ProgressBar) findViewById(R.id.progressbar);
                         progressBar.setVisibility(View.VISIBLE);
+                        final double finalLongitude = longitude;
+                        final double finalLatitude = latitude;
                         uploadingImages(image,Hashing.hashPassword(image, Hashing.SALT) ,new VolleyCallback() {
                             @Override
                             public void onSuccess(String result) {
@@ -189,7 +195,7 @@ public class addEvent extends AppCompatActivity {
                                 progressBar =  (ProgressBar) findViewById(R.id.progressbar);
                                 progressBar.setVisibility(View.VISIBLE);
 
-                                addingEvent(email, description, image_hash, latitude, longitude,JWT, new VolleyCallback() {
+                                addingEvent(email, description, image_hash, finalLatitude, finalLongitude,JWT, new VolleyCallback() {
                                     @Override
                                     public void onSuccess(String result) {
                                         Log.d("addEvent", "Response:" + result);
