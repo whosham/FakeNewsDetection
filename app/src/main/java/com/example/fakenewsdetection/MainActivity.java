@@ -246,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
                             double longitude = Double.parseDouble(location.getString("longitude"));
                             String cityName=null;
                             String timestamp =row.getString("timestamp");
-                            double trustworthiness=Double.parseDouble(row.getString("trustworthiness"));
+                            String trustworthiness=row.getString("trustworthiness");
 
                             //processing the time stamp and convert it to a readable date.
                             long ts= Long.parseLong(timestamp);

@@ -121,6 +121,7 @@ public class Voting extends AppCompatActivity {
                                 //Dismissing the progress bar
                                 Toast.makeText(Voting.this, "images uploaded Successfully", Toast.LENGTH_SHORT).show();
                                 progressBar.setVisibility(View.INVISIBLE);
+                                image=Hashing.hashPassword(image, Hashing.SALT);
                             }
                         });
                     }
@@ -130,7 +131,7 @@ public class Voting extends AppCompatActivity {
                     Log.d("Voting", "Data is ready :" + eventId + " " + rating + description +"/"+ image + ">>>>>>>" +JWT);
                     progressBar =  (ProgressBar) findViewById(R.id.progressbar);
                     progressBar.setVisibility(View.VISIBLE);
-                    assessingEvent(eventId, description,image , rating ,JWT, new VolleyCallback() {
+                    assessingEvent(eventId, description,image, rating ,JWT, new VolleyCallback() {
                         @Override
                         public void onSuccess(String result) {
                             Log.d("Voting", "Response:" + result);

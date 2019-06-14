@@ -12,6 +12,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -53,7 +55,15 @@ import static com.example.fakenewsdetection.MainActivity.EXTRA_TIMESTAMP;
 import static com.example.fakenewsdetection.MainActivity.EXTRA_TRUSTWORTHINESS;
 import static com.example.fakenewsdetection.MainActivity.MY_GLOBAL_PREFS;
 
-public class DetailedEvent extends AppCompatActivity {
+public class DetailedEvent extends AppCompatActivity  implements AssessmentAdapter.onItemClickListener {
+
+    //private GridLayoutManager gridLayoutManager ;
+    private RecyclerView recyclerView;
+    private  AssessmentAdapter adapter ;
+    private ArrayList<AssessmentData> data_list ;
+
+    //Adapter
+
 
     private static final int VOTING_REQUEST =1006;
     String eventId;
@@ -61,6 +71,15 @@ public class DetailedEvent extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detailed_event);
+
+        //Adding assessment using recycler view
+        //Home Feed //
+        recyclerView = findViewById(R.id.assessment_recyclerView) ;
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        data_list =  new ArrayList<>() ;
+
+
 
         Intent intent = getIntent() ;
         String imageUrl = intent.getStringExtra(EXTRA_IMAGE_URL) ;
@@ -80,6 +99,7 @@ public class DetailedEvent extends AppCompatActivity {
         TextView locationTV= findViewById(R.id.detailed_location_iv) ;
         TextView timestampTv= findViewById(R.id.detailed_timestamp_tv) ;
         TextView desctiptionTv= findViewById(R.id.detailed_description_tv) ;
+       // final TextView assessmentTv= findViewById(R.id.detailed_assessment_tv) ;
         Glide.with(this).load("http://192.168.3.103/data/"+imageUrl+".jpg").into(imageUrlIv);
         eventIdTv.setText(eventId);
         locationTV.setText(location);
@@ -89,28 +109,42 @@ public class DetailedEvent extends AppCompatActivity {
 
 
 
+        //Query specific event to get ssessments
+        try {
+            querySpecificEvent(eventId,new VolleyCallback() {
+                @Override
+                public void onSuccess(String result) {
+                    try {
+                       // JSONArray array = new JSONArray(result);
+                        JSONObject jsonResult = new JSONObject(result) ;
+                        Log.d("querySpecificEvent", "jsonResult>>" + jsonResult) ;
+                        JSONArray assessmentsArray = jsonResult.getJSONArray("assessments");
+                        Log.d("querySpecificEvent", "assessmentsarray>>" + assessmentsArray) ;
+                        for (int i = 0; i < assessmentsArray.length(); i++) {
+                            JSONObject row = assessmentsArray.getJSONObject(i);
+                            String id = row.getString("id");
+                            String timestamp = row.getString("timestamp");
+                            String rating = row.getString("rating");
+                            String trustworthiness = row.getString("trustworthiness");
+                            String description = row.getString("description");
+                            String image = row.getString("image");
+                            Log.d("querySpecificEvent", "assessment " + i + ": " + id + timestamp + rating + trustworthiness + description + image) ;
 
+                           // assessmentTv.setText(assessments);
+                            data_list.add(new AssessmentData(id,description,image,trustworthiness,timestamp,rating)) ;
+                            adapter = new AssessmentAdapter(DetailedEvent.this, data_list) ;
+                            recyclerView.setAdapter(adapter);
 
+                        }
 
-//        //Query specific event to get ssessments
-//        try {
-//            querySpecificEvent(eventId,new VolleyCallback() {
-//                @Override
-//                public void onSuccess(String result) {
-//                    try {
-//                        JSONArray array = new JSONArray(result);
-//                        for (int i = 0; i < array.length(); i++) {
-//                            JSONObject row = array.getJSONObject(i);
-//                            String image_url= row.getString("image");
-//                        }
-//                    } catch (JSONException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            });
-//        } catch (UnsupportedEncodingException e) {
-//            e.printStackTrace();
-//        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
 
         final ImageView upvote_button = findViewById(R.id.event_upvote_button_iv) ;
         final ImageView downvote_button = findViewById(R.id.event_downvote_button_iv) ;
@@ -159,6 +193,11 @@ public class DetailedEvent extends AppCompatActivity {
         if (resultCode == RESULT_CANCELED && requestCode == VOTING_REQUEST) {
             SnackBarMessage(R.string.error,getResources().getColor(R.color.colorOrange));
         }
+    }
+
+    @Override
+    public void onItemClick(int position) {
+
     }
 
 

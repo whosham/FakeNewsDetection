@@ -285,6 +285,7 @@ public class addEvent extends AppCompatActivity {
         Log.d("addEvent", "inside addingevent email url location " +"/"+ email + description +"/" + image_hash + "/" + latitude + "/"
                 + longitude + "/" + JWT) ;
 
+
         final JSONObject jsonWholeObject  = new JSONObject();
         JSONObject jsonLocation = new JSONObject();
         JSONObject jsonEvent   = new JSONObject();
@@ -292,9 +293,11 @@ public class addEvent extends AppCompatActivity {
 
             jsonEvent.put("title", "fooandroid");
 
+
+
             //make sure that latitude and longitude as float
-            jsonLocation.put("latitude",  52.2443);
-            jsonLocation.put("longitude", 10.5594) ;
+            jsonLocation.put("latitude",  latitude);
+            jsonLocation.put("longitude", longitude) ;
 
             jsonEvent.put("location",jsonLocation) ;
 

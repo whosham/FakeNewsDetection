@@ -10,9 +10,19 @@
     <ImageView
         android:id="@+id/detailed_image_iv"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="150dp"
         android:scaleType="center"
         android:src="@drawable/add_image" />
+
+    <TextView
+        android:id="@+id/detailed_description_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="16dp"
+        android:text="Description"
+        android:textColor="@color/colorBlack"
+        android:textSize="24sp" />
 
     <TextView
         android:id="@+id/detailed_eventid_tv"
@@ -107,7 +117,7 @@
             android:id="@+id/event_upvote_button_iv"
             android:layout_width="64dp"
             android:layout_height="64dp"
-            android:layout_marginLeft="64dp"
+            android:layout_marginRight="16dp"
             android:padding="2dp"
             android:src="@drawable/ic_thumb_up"
             android:tint="@color/colorSilver" />
@@ -117,31 +127,23 @@
             android:id="@+id/event_downvote_button_iv"
             android:layout_width="64dp"
             android:layout_height="64dp"
-            android:layout_marginLeft="64dp"
+            android:layout_marginLeft="16dp"
             android:padding="2dp"
             android:src="@drawable/ic_thumb_down"
             android:tint="@color/colorSilver" />
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/detailed_description_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="16dp"
-        android:text="Description"
-        android:textColor="@color/colorBlack"
-        android:textSize="24sp" />
 
-    <TextView
-        android:id="@+id/detailed_assessment_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="16dp"
-        android:text="Assessment"
-        android:textColor="@color/colorBlack"
-        android:textSize="20sp" />
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/assessment_recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorDarkBlue"
+        android:scrollbars="vertical">
+
+
+    </android.support.v7.widget.RecyclerView>
+
 
 </LinearLayout>

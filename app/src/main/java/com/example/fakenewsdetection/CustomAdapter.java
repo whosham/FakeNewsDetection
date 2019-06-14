@@ -61,7 +61,7 @@ class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder> {
         String description= currentItem.getDescription();
         String id= currentItem.getId();
         String timestamp = currentItem.getTimestamp();
-        double trustworthiness= currentItem.getTrustworthiness();
+        String trustworthiness= currentItem.getTrustworthiness();
         double latitude = currentItem.getLatitude();
         double longitude= currentItem.getLongitude();
         String cityName= currentItem.getCityName();
