@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -251,7 +252,8 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
                             //processing the time stamp and convert it to a readable date.
                             long ts= Long.parseLong(timestamp);
                             Date d = new Date(ts * 1000);
-                            DateFormat df = new SimpleDateFormat("dd MMM yyyy HH:mm:ss zzz");
+                            DateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ssZ");
+                            df.setTimeZone(TimeZone.getTimeZone("Europe/Berlin"));
                             String mDate= (df.format(d));
 
                             Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());

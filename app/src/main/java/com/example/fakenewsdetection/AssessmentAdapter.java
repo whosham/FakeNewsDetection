@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -73,16 +74,14 @@ class AssessmentAdapter extends RecyclerView.Adapter<AssessmentAdapter.ViewHolde
         viewHolder.timestamp.setText("Posted: "+timestamp);
         viewHolder.trustworthiness.setText("Trustworthiness: "+ trustworthiness + "Ranking:" + rating );
 
+        //Rating bar score
+//
+//        double ratie = trus
+//        if ()
+//        viewHolder.ratingBar.setRating(5);
+
         RequestOptions requestOptions = new RequestOptions();
         requestOptions.placeholder(R.drawable.info_button).override(300,300);
-
-        //setting the glide
-        Log.d("Result Hash", "After Hash Result" ) ;
-//        Glide.with(profile.this)
-//                .asBitmap()
-//                .load("https://hausapp.ibr.cs.tu-bs.de/profile_images/"+name+".jpg")
-//                .apply(requestOptions)
-//                .into(imageView);
         Glide.with(mcontext)
                 .load("http://192.168.3.103/data/"+imageUrl+".jpg")
                 .apply(requestOptions)
@@ -100,6 +99,7 @@ class AssessmentAdapter extends RecyclerView.Adapter<AssessmentAdapter.ViewHolde
 
         public TextView description,id,timestamp,trustworthiness;
         public ImageView imageView ;
+        public RatingBar ratingBar;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -108,7 +108,7 @@ class AssessmentAdapter extends RecyclerView.Adapter<AssessmentAdapter.ViewHolde
             imageView = itemView.findViewById(R.id.assessment_image_iv) ;
             trustworthiness=  itemView.findViewById(R.id.assessment_rank_tv);
             timestamp= itemView.findViewById(R.id.assessment_timestamp_tv) ;
-
+           // ratingBar= itemView.findViewById(R.id.event_ratingBar);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                                             @Override

@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -76,6 +77,36 @@ class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder> {
         viewHolder.trustworthiness.setText("Trustworthiness: "+ trustworthiness );
         Glide.with(mcontext).load("http://192.168.3.103/data/"+imageUrl+".jpg").into(viewHolder.imageView);
 
+        //Rating bar
+        float rating = Float.parseFloat(trustworthiness);
+
+        if (rating <= 0) {
+           //0star
+            viewHolder.ratingBar.setRating(0);
+        }
+        else if ( rating > 0 && rating <5 ) {
+            //one star
+            viewHolder.ratingBar.setRating(1);
+        }
+        else if (rating >= 5 && rating <10 ) {
+            //two stars
+            viewHolder.ratingBar.setRating(2);
+        }
+        else if (rating >= 10 && rating <15 ) {
+            //3 stars
+            viewHolder.ratingBar.setRating(3);
+        }
+        else if (rating >= 15 && rating < 20 ) {
+            //4 stars
+            viewHolder.ratingBar.setRating(4);
+        }
+        else if (rating >= 20 ) {
+            //4 stars
+            viewHolder.ratingBar.setRating(5);
+        }
+
+
+
     }
 
     @Override
@@ -87,6 +118,8 @@ class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder> {
 
         public TextView description,id,location,timestamp,trustworthiness;
         public ImageView imageView ;
+        public RatingBar ratingBar;
+
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -96,7 +129,7 @@ class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder> {
             location= itemView.findViewById(R.id.event_location_tv);
             trustworthiness=  itemView.findViewById(R.id.event_rank_tv);
             timestamp= itemView.findViewById(R.id.event_timestamp_tv) ;
-
+            ratingBar=itemView.findViewById(R.id.event_ratingBar);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
