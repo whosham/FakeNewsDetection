@@ -2,6 +2,7 @@ package com.example.fakenewsdetection;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -23,13 +24,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.fakenewsdetection.Utilities.Hashing;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -38,6 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.example.fakenewsdetection.MainActivity.EXTRA_Description;
+import static com.example.fakenewsdetection.MainActivity.MY_GLOBAL_PREFS;
 
 
 public class Voting extends AppCompatActivity {
@@ -48,7 +53,8 @@ public class Voting extends AppCompatActivity {
     private static final int IMAGE_REQUEST = 1007;
     private Bitmap bitmap;
     private ImageView selectedImage;
-
+    private float rating;
+    private String eventId,description,image,image_hash="";
     private TextView voteTypeTV ;
     private EditText votingDescriptionEditText ;
     private ProgressBar progressBar;
@@ -58,18 +64,19 @@ public class Voting extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_voting);
 
-
-
         //getting if user making up/downvote
         Bundle extras = getIntent().getExtras();
         String voteType = extras.getString("votetype") ;
+        eventId= extras.getString("eventid");
         voteTypeTV = findViewById(R.id.tv_voting_type) ;
         voteTypeTV.setText(voteType);
         if (voteType.equals("Upvote!")){
             voteTypeTV.setTextColor(getResources().getColor(R.color.colorGreen));
+            rating=1;
         }
         else {
             voteTypeTV.setTextColor(getResources().getColor(R.color.colorRed));
+            rating=-1;
         }
 
 
@@ -94,13 +101,16 @@ public class Voting extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 votingDescriptionEditText= findViewById(R.id.et_voting_description);
-                final String description = votingDescriptionEditText.getText().toString();
+                description = votingDescriptionEditText.getText().toString();
+                Log.d("Voting", "checking :" + eventId + " " + rating + description +"/"+ image);
                 //Checking if user entered text or Image
-                if (description != null && bitmap != null ){
-
+                if (description.isEmpty() && bitmap == null ){
+                    Toast.makeText(Voting.this, "Please Enter Text or Upload an image!!", Toast.LENGTH_SHORT).show();
+                }
+                else{
                     //if there is an image
                     if (bitmap != null) {
-                        final String image = imageToString(bitmap);
+                        image = imageToString(bitmap);
                         progressBar =  (ProgressBar) findViewById(R.id.progressbar);
                         progressBar.setVisibility(View.VISIBLE);
                         uploadingImages(image,Hashing.hashPassword(image, Hashing.SALT) ,new Voting.VolleyCallback() {
@@ -111,16 +121,76 @@ public class Voting extends AppCompatActivity {
                                 //Dismissing the progress bar
                                 Toast.makeText(Voting.this, "images uploaded Successfully", Toast.LENGTH_SHORT).show();
                                 progressBar.setVisibility(View.INVISIBLE);
+
+                                // Adding the vote to the blockchain
+                                SharedPreferences prefs = getSharedPreferences(MY_GLOBAL_PREFS, MODE_PRIVATE);
+                                String JWT = prefs.getString(MainActivity.JWT, "");
+                                Log.d("Voting", "Data is ready With Image:" + eventId + " " + rating + description +"/"+ image_hash + ">>>>>>>" +JWT);
+                                progressBar =  (ProgressBar) findViewById(R.id.progressbar);
+                                progressBar.setVisibility(View.VISIBLE);
+                                image_hash=Hashing.hashPassword(image, Hashing.SALT);
+                                assessingEvent(eventId, description,image_hash, rating ,JWT, new VolleyCallback() {
+                                    @Override
+                                    public void onSuccess(String result) {
+                                        Log.d("Voting", "Response:" + result);
+                                        try {
+                                            progressBar.setVisibility(View.INVISIBLE);
+                                            JSONObject jsonResult = new JSONObject(result) ;
+                                            String stringResult = String.valueOf(jsonResult.get("success"));
+                                            Log.d("Voting", "string:" + stringResult );
+                                            if(stringResult.equals("true")){
+                                                setResult(RESULT_OK, getIntent());
+                                                finish();
+                                            }
+                                            else {
+                                                setResult(RESULT_CANCELED, getIntent());
+                                                finish();
+                                            }
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                    }
+                                });
                             }
                         });
                     }
-                    // Adding the vote to the blockchain
+                    else {
+                        // No image only description
+                        // Adding the vote to the blockchain
+                        SharedPreferences prefs = getSharedPreferences(MY_GLOBAL_PREFS, MODE_PRIVATE);
+                        String JWT = prefs.getString(MainActivity.JWT, "");
+                        Log.d("Voting", "Data is ready No image :" + eventId + " " + rating + description +"/"+ image_hash + ">>>>>>>" +JWT);
+                        progressBar =  (ProgressBar) findViewById(R.id.progressbar);
+                        progressBar.setVisibility(View.VISIBLE);
+                        assessingEvent(eventId, description,image_hash, rating ,JWT, new VolleyCallback() {
+                            @Override
+                            public void onSuccess(String result) {
+                                Log.d("Voting", "Response:" + result);
+                                try {
+                                    progressBar.setVisibility(View.INVISIBLE);
+                                    JSONObject jsonResult = new JSONObject(result) ;
+                                    String stringResult = String.valueOf(jsonResult.get("success"));
+                                    Log.d("Voting", "string:" + stringResult );
+                                    if(stringResult.equals("true")){
+                                        setResult(RESULT_OK, getIntent());
+                                        finish();
+                                    }
+                                    else {
+                                        setResult(RESULT_CANCELED, getIntent());
+                                        finish();
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+                        });
+
+                    }
 
 
 
-                }
-                else{
-                    Toast.makeText(Voting.this, "Please Enter Text or Upload an image!!", Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -224,4 +294,62 @@ public class Voting extends AppCompatActivity {
 
         Volley.newRequestQueue(Voting.this).add(request);
     }
+
+
+    //Assessment
+    private void assessingEvent(final String eventID, final String description , final String image_hash , final float rating , final String JWT, final Voting.VolleyCallback callback){
+        Log.d("Voting", "inside assessing event" +"/"+ eventID + "/"+ rating + "/" + description +"/" + image_hash+ "/" + JWT) ;
+
+        final JSONObject jsonWholeObject  = new JSONObject();
+        JSONObject jsonEvent   = new JSONObject();
+        try {
+            jsonEvent.put("event", eventID);
+            jsonEvent.put("rating",rating) ;
+            jsonEvent.put("description", description);
+            jsonEvent.put("image", image_hash) ;
+
+            jsonWholeObject.put("args", jsonEvent );
+            Log.d("Voting", "jsonEvent: " + String.valueOf(jsonWholeObject.get("args")) ) ;
+
+            jsonWholeObject.put("fcn","judgeEvent") ;
+            jsonWholeObject.put("peers","[\"peer0.org1.example.com\",\"peer0.org2.example.com\"]");
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Log.d("Voting", "jsonWholeObject : " + jsonWholeObject + "Types:" + jsonWholeObject.getClass().getName() ) ;
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST,"http://192.168.3.103:4000/channels/mychannel/chaincodes/mycc",
+                jsonWholeObject , new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                callback.onSuccess(String.valueOf(response));
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("Voting", "Fail to add Event on BC:" + String.valueOf(error) ) ;
+                setResult(RESULT_CANCELED, getIntent());
+                finish();
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers= new HashMap<String, String>();
+                String authorization= "Bearer " + JWT ;
+                headers.put("Content-type","application/json");
+                headers.put("Accept-Encoding", "utf-8");
+                headers.put("authorization", authorization);
+                return headers;
+            }
+        };
+
+        request.setRetryPolicy(new DefaultRetryPolicy(30 * 1000, 0,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        Volley.newRequestQueue(Voting.this).add(request);
+    }
+
+
+
 }

@@ -15,7 +15,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 
-public class LocationRequest extends AppCompatActivity {
+public class LocationPermissionRequest extends AppCompatActivity {
 
 
    private Button allowLocationAccess ;
@@ -28,13 +28,16 @@ public class LocationRequest extends AppCompatActivity {
         setContentView(R.layout.activity_location_request);
 
         //checking on Location permission
-        if (ContextCompat.checkSelfPermission(LocationRequest.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(LocationPermissionRequest.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             setResult(RESULT_OK, getIntent());
             finish();
         }
         else {
             //Requesting Permissions
-            requestLocationPermissions();
+            if (ContextCompat.checkSelfPermission(LocationPermissionRequest.this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+                    PackageManager.PERMISSION_GRANTED) {
+                requestLocationPermissions();
+            }
         }
 
         allowLocationAccess = findViewById(R.id.allow_location_access_button) ;
@@ -42,14 +45,17 @@ public class LocationRequest extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if (ContextCompat.checkSelfPermission(LocationRequest.this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                if (ContextCompat.checkSelfPermission(LocationPermissionRequest.this, Manifest.permission.ACCESS_FINE_LOCATION) ==
                         PackageManager.PERMISSION_GRANTED)
                 {
                     setResult(RESULT_OK, getIntent());
                     finish();
                 }
                 else{
-                    requestLocationPermissions();
+                    if (ContextCompat.checkSelfPermission(LocationPermissionRequest.this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+                            PackageManager.PERMISSION_GRANTED) {
+                        requestLocationPermissions();
+                    }
                 }
             }
         });
@@ -69,7 +75,7 @@ public class LocationRequest extends AppCompatActivity {
 
 
     private void requestLocationPermissions() {
-        ActivityCompat.requestPermissions(LocationRequest.this,
+        ActivityCompat.requestPermissions(LocationPermissionRequest.this,
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_CODE);
     }
 
@@ -77,7 +83,7 @@ public class LocationRequest extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode,
                                            String[] permissions, int[] grantResults) {
         if (requestCode == LOCATION_PERMISSION_CODE){
-            if (ContextCompat.checkSelfPermission(LocationRequest.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(LocationPermissionRequest.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 setResult(RESULT_OK, getIntent());
                 finish();
             }

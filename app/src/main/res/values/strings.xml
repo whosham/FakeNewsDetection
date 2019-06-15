@@ -27,4 +27,5 @@
     <string name="logout_confirmation">Confirm Logging out?</string>
     <string name="addevent_success">Your Story is online</string>
     <string name="error">Error Something went wrong</string>
+    <string name="votingResult">You Voted!</string>
 </resources>

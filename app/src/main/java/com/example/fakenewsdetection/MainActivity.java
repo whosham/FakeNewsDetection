@@ -10,6 +10,8 @@ import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationManager;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.bottomappbar.BottomAppBar;
@@ -19,7 +21,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -27,18 +28,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.GridLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -49,11 +46,9 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.security.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -61,18 +56,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
-import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
-
-public class MainActivity extends AppCompatActivity implements CustomAdapter.onItemClickListener,ConnectionCallbacks, OnConnectionFailedListener {
+import com.google.android.gms.location.LocationRequest;
+public class MainActivity extends AppCompatActivity implements CustomAdapter.onItemClickListener, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener, LocationListener{
 
     //Test pushing from android studio local to remote master1
+
 
 
     //Referencing UI elements
@@ -95,10 +94,18 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
     public static final String MY_GLOBAL_PREFS = "my_global_prefs" ;
     public static final String JWT= "token";
     String email;
+    public static final String LOCATION_LAT_KEY = "lat_key";
+    public static final String LOCATION_LONG_KEY = "long_key";
     //google api client for Location
     private GoogleApiClient googleApiClient;
     private FusedLocationProviderClient fusedLocationProviderClient;
+    private Location location;
+    private LocationManager locationManager;
+    private LocationRequest locationRequest;
+    private LocationCallback locationCallback;
+
     private String latitude,longitude;
+    public Double latCall,longCall;
     private int LOCATION_PERMISSION_CODE=1;
 
     //variables for on click Events
@@ -110,16 +117,6 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
     public static final String EXTRA_TRUSTWORTHINESS  = "trustworthiness" ;
 
 
-
-
-    //Trying Background update of activity
-    private FusedLocationProviderClient fusedLocationClient1;
-
-
-    static MainActivity instance ;
-    public static MainActivity getInstance(){
-        return instance ;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,35 +133,33 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
         }
 
 
-
-
         //checking Location permissions.
         //checking on Location permission
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//            Toast.makeText(MainActivity.this, "Location Access already been granted! ", Toast.LENGTH_SHORT).show();
-           // updateLocation();
         }
         else {
             //Call the location activity request
-            Intent allowLocationAccess = new Intent(MainActivity.this, LocationRequest.class);
+            Intent allowLocationAccess = new Intent(MainActivity.this, LocationPermissionRequest.class);
             startActivityForResult(allowLocationAccess, LOCATION_ACCESS_REQUEST);
         }
 
-        // using background for location
-        instance= this;
 
 
+//        //Getting Location
+//        googleApiClient =  new GoogleApiClient.Builder(this)
+//                .addConnectionCallbacks(this)
+//                .addOnConnectionFailedListener(this)
+//                .addApi(LocationServices.API)
+//                .build();
+//     //   locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+////
 
 
+        getLocationpdates();
 
-        //Getting Location
-        googleApiClient =  new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-
-        fusedLocationProviderClient= LocationServices.getFusedLocationProviderClient(this) ;
+        latitude = prefs.getString(MainActivity.LOCATION_LAT_KEY, "");
+        longitude= prefs.getString(MainActivity.LOCATION_LONG_KEY, "");
+        Log.d("Mainactivity", "From Shared Preference" + latitude + longitude);
 
 
         //Getting JWT and Enroll user
@@ -200,21 +195,18 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         data_list =  new ArrayList<>() ;
 
-
-//        double latitudeDouble = 0, longitudeouble=0;
-//        latitude = Double.parseDouble(String.valueOf(latitude));
-//        longitude= Double.parseDouble(String.valueOf(longitude));
-//
-
-        queryChainCode(52,10,new VolleyCallback() {
-            @Override
-            public void onSuccess(String result) {
-                try {
-                    JSONArray array = new JSONArray(result);
-                    JSONArray sortedJsonArray = new JSONArray();
-
-                    //sorting the data based on the time
-                    //if(array.length()>1) {
+        if (latitude == null && longitude == null ){
+            Toast.makeText(MainActivity.this, "Unable to Fetch the current Location!", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            queryChainCode(Double.parseDouble(latitude),Double.parseDouble(longitude),new VolleyCallback() {
+                @Override
+                public void onSuccess(String result) {
+                    try {
+                        JSONArray array = new JSONArray(result);
+                        JSONArray sortedJsonArray = new JSONArray();
+                        //sorting the data based on the time
+                        //if(array.length()>1) {
                         List<JSONObject> jsonValues = new ArrayList<JSONObject>();
                         for (int i = 0; i < array.length(); i++) {
                             jsonValues.add(array.getJSONObject(i));
@@ -243,64 +235,61 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
                             sortedJsonArray.put(jsonValues.get(i));
                         }
 
-                  //  }
 
-                    Log.d("queryChaincode", "Sorted json array" + sortedJsonArray) ;
+                        Log.d("queryChaincode", "Sorted json array" + sortedJsonArray) ;
 
-                    for (int i = 0; i < sortedJsonArray.length(); i++) {
-                        JSONObject row = sortedJsonArray.getJSONObject(i);
-                        String image_url= row.getString("image");
-                        String id= row.getString("id");
-                        JSONObject location= row.getJSONObject("location");
+                        for (int i = 0; i < sortedJsonArray.length(); i++) {
+                            JSONObject row = sortedJsonArray.getJSONObject(i);
+                            String image_url= row.getString("image");
+                            String id= row.getString("id");
+                            JSONObject location= row.getJSONObject("location");
+                            double latitude = Double.parseDouble(location.getString("latitude"));
+                            double longitude = Double.parseDouble(location.getString("longitude"));
+                            String cityName=null;
+                            String timestamp =row.getString("timestamp");
+                            String trustworthiness=row.getString("trustworthiness");
 
-                        double latitude = Double.parseDouble(location.getString("latitude"));
-                        double longitude = Double.parseDouble(location.getString("longitude"));
-                        String cityName=null;
-                        String timestamp =row.getString("timestamp");
-                        double trustworthiness=Double.parseDouble(row.getString("trustworthiness"));
+                            //processing the time stamp and convert it to a readable date.
+                            long ts= Long.parseLong(timestamp);
+                            Date d = new Date(ts * 1000);
+                            DateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ssZ");
+                            df.setTimeZone(TimeZone.getTimeZone("Europe/Berlin"));
+                            String mDate= (df.format(d));
+
+                            Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+                            List<Address> addresses = null;
+                            try {
+                                addresses = geocoder.getFromLocation(latitude, longitude, 1);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            if (addresses.size() > 0){
+                                cityName=addresses.get(0).getLocality();
+                                Log.d("querychaincode", "City name:"+ addresses.get(0).getLocality() ) ;
+                            }
 
 
 
-                        //processing the time stamp and convert it to a readable date.
-                        long ts= Long.parseLong(timestamp);
-                        Date d = new Date(ts * 1000);
-                        DateFormat df = new SimpleDateFormat("dd MMM yyyy HH:mm:ss zzz");
-                        String mDate= (df.format(d));
-
-
-                        Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
-                        List<Address> addresses = null;
-                        try {
-                            addresses = geocoder.getFromLocation(latitude, longitude, 1);
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                            String description= row.getString("description");
+                            Log.d("querychaincode", "row " + i + ":" + id + description+image_url+latitude+longitude+timestamp+trustworthiness);
+                            data_list.add(new MyData(id,description,image_url,latitude,longitude,cityName,mDate,trustworthiness)) ;
                         }
-                        if (addresses.size() > 0){
-                            cityName=addresses.get(0).getLocality();
-                            Log.d("querychaincode", "City name:"+ addresses.get(0).getLocality() ) ;
-                        }
+                        adapter = new CustomAdapter(MainActivity.this, data_list) ;
+                        recyclerView.setAdapter(adapter);
+                        // Implementing per click
+                        adapter.setOnItemClickListener(MainActivity.this);
 
-
-
-                        String description= row.getString("description");
-                        Log.d("querychaincode", "row " + i + ":" + id + description+image_url+latitude+longitude+timestamp+trustworthiness);
-                        data_list.add(new MyData(id,description,image_url,latitude,longitude,cityName,mDate,trustworthiness)) ;
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                    adapter = new CustomAdapter(MainActivity.this, data_list) ;
-                    recyclerView.setAdapter(adapter);
-                    // Implementing per click
-                    adapter.setOnItemClickListener(MainActivity.this);
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
                 }
-            }
-        });
+            });
+
+        }
 
 
         floatingActionButton = findViewById(R.id.fab);
         bottomAppBar = findViewById(R.id.bottomAppbar);
-
 
         //for handling fab
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
@@ -308,9 +297,17 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
             public void onClick(View v) {
                //Adding New Event
                 Intent addEvent = new Intent(MainActivity.this, addEvent.class);
-                addEvent.putExtra("lat", latitude) ;
-                addEvent.putExtra("long", longitude) ;
-                startActivityForResult(addEvent, ADDEVENT_REQUEST);
+                SharedPreferences prefs = getSharedPreferences(MY_GLOBAL_PREFS, MODE_PRIVATE);
+                latitude = prefs.getString(MainActivity.LOCATION_LAT_KEY, "");
+                longitude= prefs.getString(MainActivity.LOCATION_LONG_KEY, "");
+                if(latitude !=  null  && longitude != null ) {
+                    addEvent.putExtra("lat", latitude);
+                    addEvent.putExtra("long", longitude);
+                    startActivityForResult(addEvent, ADDEVENT_REQUEST);
+                }
+                else {
+                    Toast.makeText(MainActivity.this, "Unable to Fetch the current Location!", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -319,7 +316,8 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
     }
 
 
-    public void queryChainCode(final double latitude, final double longitude, final VolleyCallback callback) {
+
+    public void queryChainCode(final Double latitude, final Double longitude, final VolleyCallback callback) {
         SharedPreferences prefs = getSharedPreferences(MY_GLOBAL_PREFS, MODE_PRIVATE);
         final String JWT = prefs.getString(MainActivity.JWT, "");
         Log.d("querychaincode", "location: " + latitude + "/" + longitude ) ;
@@ -377,8 +375,6 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
         Volley.newRequestQueue(MainActivity.this).add(request);
     }
 
-    private void updateLocation() {
-    }
 
     //for handling menu
     @Override
@@ -422,6 +418,9 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
                 return true;
 
             case  R.id.bottom_app_location:
+                SharedPreferences prefs = getSharedPreferences(MY_GLOBAL_PREFS, MODE_PRIVATE);
+                latitude = prefs.getString(MainActivity.LOCATION_LAT_KEY, "");
+                longitude= prefs.getString(MainActivity.LOCATION_LONG_KEY, "");
                 Toast.makeText(MainActivity.this, "Location is: " +latitude + "/" + longitude  , Toast.LENGTH_SHORT).show();
                 return true;
 
@@ -449,39 +448,75 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
                 return true;
 
             case  R.id.bottom_app_home:
-
                 finish();
                 startActivity(getIntent());
                 return true;
-
         }
-
-
-
-
 
         return super.onOptionsItemSelected(item);
     }
 
 
     //Location Handling Methods
+
+    @SuppressLint("MissingPermission")
+    void getLocationpdates(){
+
+
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+           return ;
+        }
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this) ;
+        fusedLocationProviderClient.requestLocationUpdates(getLocationRequest(),
+                getLocationCallback(),
+                Looper.myLooper());
+    }
+
+    private LocationCallback getLocationCallback() {
+        LocationCallback callback = new LocationCallback(){
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+               Location location= locationResult.getLastLocation();
+               latCall = location.getLatitude();
+               longCall= location.getLongitude();
+               SharedPreferences.Editor editor =
+                        getSharedPreferences(MY_GLOBAL_PREFS,MODE_PRIVATE).edit();
+                editor.putString(MainActivity.LOCATION_LAT_KEY, String.valueOf(latCall));
+                editor.putString(MainActivity.LOCATION_LONG_KEY, String.valueOf(longCall));
+                editor.apply();
+                Log.d("Mainactivity", "lat longcall>>" + latCall+">>" + longCall);
+            }
+        };
+        return callback;
+    }
+
+    private LocationRequest getLocationRequest() {
+        LocationRequest request = LocationRequest.create();
+        request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        request.setInterval(20000);
+        request.setFastestInterval(5000);
+        return request;
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
-        googleApiClient.connect();
+//        Log.d("Mainactivity", "onstart ");
+//        googleApiClient.connect();
     }
 
     @Override
     protected void onStop() {
-        if (googleApiClient.isConnected()){
-            googleApiClient.disconnect();
-        }
+//        if (googleApiClient.isConnected()){
+//            googleApiClient.disconnect();
+//        }
         super.onStop();
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
+        Log.d("Mainactivity", "inside onConnected:" );
         //checking on Location permission
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             //Toast.makeText(MainActivity.this, "Location Access already been granted! ", Toast.LENGTH_SHORT).show();
@@ -497,9 +532,15 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
                         if(location != null){
                             latitude=String.valueOf(location.getLatitude());
                             longitude=String.valueOf(location.getLongitude());
+                            Log.d("Mainactivity", "inside fusedlocation:" + latitude +longitude );
                         }
                     }
                 });
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
     }
 
 
@@ -507,18 +548,32 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
         ActivityCompat.requestPermissions(MainActivity.this,
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_CODE);
     }
+//    @Override
+@Override
+public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+}
 
     @Override
-    public void onConnectionSuspended(int i) {
-        Log.d("Mainactivity", "Connection Suspended ");
+    public void onLocationChanged(Location location) {
+
     }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.d("Mainactivity", "Connection Failed");
-    }
-
-
+//    public void onConnectionSuspended(int i) {
+//        Log.d("Mainactivity", "Connection Suspended ");
+//    }
+//
+//    @Override
+//    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+//        Log.d("Mainactivity", "Connection Failed");
+//    }
+//
+//
+//    @Override
+//    public void onLocationChanged(Location location) {
+//
+//    }
+//
+//
     //Handling per click events.
     @Override
     public void onItemClick(int position) {
@@ -533,6 +588,7 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
 
         startActivity(detailedEvent);
     }
+
 
     //Volley call back interface
     public interface VolleyCallback{
@@ -583,14 +639,12 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
 
         //checking the Result from Add Event
         if (resultCode == RESULT_OK && requestCode == ADDEVENT_REQUEST) {
-            SnackBarMessage(R.string.addevent_success,getResources().getColor(R.color.colorGreen));
+            SnackBarMessage(R.string.addevent_success,getResources().getColor(R.color.colorBlue));
            // Toast.makeText(MainActivity.this,"Your Story is online!", Toast.LENGTH_LONG).show();
         }
         if (resultCode == RESULT_CANCELED && requestCode == ADDEVENT_REQUEST) {
             SnackBarMessage(R.string.error,getResources().getColor(R.color.colorOrange));
         }
-
-
     }
 
     //Method for Snackbar
