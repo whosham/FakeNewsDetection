@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder> {
     private Context mcontext;
@@ -67,6 +68,12 @@ class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder> {
         double longitude= currentItem.getLongitude();
         String cityName= currentItem.getCityName();
 
+//        //processing the time stamp and convert it to a readable date.
+//        long ts= Long.parseLong(timestamp);
+//        Date d = new Date(ts * 1000);
+//        DateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ssZ");
+//      //  df.setTimeZone(TimeZone.getTimeZone("Europe/Berlin"));
+//        String mDate= (df.format(d));
 
 
 

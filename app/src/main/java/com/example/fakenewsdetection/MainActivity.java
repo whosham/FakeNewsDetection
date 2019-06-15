@@ -639,7 +639,7 @@ public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
         //checking the Result from Add Event
         if (resultCode == RESULT_OK && requestCode == ADDEVENT_REQUEST) {
-            SnackBarMessage(R.string.addevent_success,getResources().getColor(R.color.colorGreen));
+            SnackBarMessage(R.string.addevent_success,getResources().getColor(R.color.colorBlue));
            // Toast.makeText(MainActivity.this,"Your Story is online!", Toast.LENGTH_LONG).show();
         }
         if (resultCode == RESULT_CANCELED && requestCode == ADDEVENT_REQUEST) {

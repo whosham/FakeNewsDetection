@@ -69,16 +69,19 @@ class AssessmentAdapter extends RecyclerView.Adapter<AssessmentAdapter.ViewHolde
         String trustworthiness= currentItem.getTrustworthiness();
 
 
+
         viewHolder.id.setText(id);
         viewHolder.description.setText(description);
         viewHolder.timestamp.setText("Posted: "+timestamp);
-        viewHolder.trustworthiness.setText("Trustworthiness: "+ trustworthiness + "Ranking:" + rating );
+        viewHolder.trustworthiness.setText("Trustworthiness: "+ trustworthiness + " Ranking: " + rating );
 
-        //Rating bar score
-//
-//        double ratie = trus
-//        if ()
-//        viewHolder.ratingBar.setRating(5);
+
+        if (rating.equals("1")) {
+            viewHolder.assessment_downvote.setVisibility(View.INVISIBLE);
+        }
+        else {
+            viewHolder.assessment_upvote.setVisibility(View.INVISIBLE);
+        }
 
         RequestOptions requestOptions = new RequestOptions();
         requestOptions.placeholder(R.drawable.info_button).override(300,300);
@@ -98,7 +101,7 @@ class AssessmentAdapter extends RecyclerView.Adapter<AssessmentAdapter.ViewHolde
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         public TextView description,id,timestamp,trustworthiness;
-        public ImageView imageView ;
+        public ImageView imageView,assessment_upvote,assessment_downvote ;
         public RatingBar ratingBar;
 
         public ViewHolder(@NonNull View itemView) {
@@ -108,6 +111,9 @@ class AssessmentAdapter extends RecyclerView.Adapter<AssessmentAdapter.ViewHolde
             imageView = itemView.findViewById(R.id.assessment_image_iv) ;
             trustworthiness=  itemView.findViewById(R.id.assessment_rank_tv);
             timestamp= itemView.findViewById(R.id.assessment_timestamp_tv) ;
+            assessment_upvote=itemView.findViewById(R.id.assessment_upvote_iv);
+            assessment_downvote=itemView.findViewById(R.id.assessment_downvote_iv);
+
            // ratingBar= itemView.findViewById(R.id.event_ratingBar);
 
             itemView.setOnClickListener(new View.OnClickListener() {

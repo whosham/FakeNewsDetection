@@ -17,6 +17,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -92,7 +93,7 @@ public class DetailedEvent extends AppCompatActivity  implements AssessmentAdapt
 
         //Displaying the detailed event
 
-
+        RatingBar ratingBar = findViewById(R.id.detailed_ratingBar);
         ImageView imageUrlIv = findViewById(R.id.detailed_image_iv) ;
         TextView eventIdTv= findViewById(R.id.detailed_eventid_tv) ;
         TextView trustworthinessTv= findViewById(R.id.detailed_rank_tv) ;
@@ -103,9 +104,36 @@ public class DetailedEvent extends AppCompatActivity  implements AssessmentAdapt
         Glide.with(this).load("http://192.168.3.103/data/"+imageUrl+".jpg").into(imageUrlIv);
         eventIdTv.setText(eventId);
         locationTV.setText(location);
-        timestampTv.setText(timestamp);
+        timestampTv.setText("Posted: " +timestamp);
         desctiptionTv.setText(description);
-        trustworthinessTv.setText(trustworthiness);
+        trustworthinessTv.setText("Trustorthiness: " + trustworthiness);
+
+                //Rating bar
+                float rating = Float.parseFloat(trustworthiness);
+                if (rating <= 0) {
+                    //0star
+                    ratingBar.setRating(0);
+                }
+                else if ( rating > 0 && rating <5 ) {
+                    //one star
+                    ratingBar.setRating(1);
+                }
+                else if (rating >= 5 && rating <10 ) {
+                    //two stars
+                    ratingBar.setRating(2);
+                }
+                else if (rating >= 10 && rating <15 ) {
+                    //3 stars
+                    ratingBar.setRating(3);
+                }
+                else if (rating >= 15 && rating < 20 ) {
+                    //4 stars
+                    ratingBar.setRating(4);
+                }
+                else if (rating >= 20 ) {
+                    //5 stars
+                    ratingBar.setRating(5);
+                }
 
 
 
@@ -188,6 +216,8 @@ public class DetailedEvent extends AppCompatActivity  implements AssessmentAdapt
         //checking the Result from Add Event
         if (resultCode == RESULT_OK && requestCode == VOTING_REQUEST) {
             SnackBarMessage(R.string.votingResult,getResources().getColor(R.color.colorGreen));
+            finish();
+            startActivity(getIntent());
             // Toast.makeText(MainActivity.this,"Your Story is online!", Toast.LENGTH_LONG).show();
         }
         if (resultCode == RESULT_CANCELED && requestCode == VOTING_REQUEST) {

@@ -54,7 +54,7 @@ public class Voting extends AppCompatActivity {
     private Bitmap bitmap;
     private ImageView selectedImage;
     private float rating;
-    private String eventId,description,image;
+    private String eventId,description,image,image_hash="";
     private TextView voteTypeTV ;
     private EditText votingDescriptionEditText ;
     private ProgressBar progressBar;
@@ -121,39 +121,73 @@ public class Voting extends AppCompatActivity {
                                 //Dismissing the progress bar
                                 Toast.makeText(Voting.this, "images uploaded Successfully", Toast.LENGTH_SHORT).show();
                                 progressBar.setVisibility(View.INVISIBLE);
-                                image=Hashing.hashPassword(image, Hashing.SALT);
+
+                                // Adding the vote to the blockchain
+                                SharedPreferences prefs = getSharedPreferences(MY_GLOBAL_PREFS, MODE_PRIVATE);
+                                String JWT = prefs.getString(MainActivity.JWT, "");
+                                Log.d("Voting", "Data is ready With Image:" + eventId + " " + rating + description +"/"+ image_hash + ">>>>>>>" +JWT);
+                                progressBar =  (ProgressBar) findViewById(R.id.progressbar);
+                                progressBar.setVisibility(View.VISIBLE);
+                                image_hash=Hashing.hashPassword(image, Hashing.SALT);
+                                assessingEvent(eventId, description,image_hash, rating ,JWT, new VolleyCallback() {
+                                    @Override
+                                    public void onSuccess(String result) {
+                                        Log.d("Voting", "Response:" + result);
+                                        try {
+                                            progressBar.setVisibility(View.INVISIBLE);
+                                            JSONObject jsonResult = new JSONObject(result) ;
+                                            String stringResult = String.valueOf(jsonResult.get("success"));
+                                            Log.d("Voting", "string:" + stringResult );
+                                            if(stringResult.equals("true")){
+                                                setResult(RESULT_OK, getIntent());
+                                                finish();
+                                            }
+                                            else {
+                                                setResult(RESULT_CANCELED, getIntent());
+                                                finish();
+                                            }
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                    }
+                                });
                             }
                         });
                     }
-                    // Adding the vote to the blockchain
-                    SharedPreferences prefs = getSharedPreferences(MY_GLOBAL_PREFS, MODE_PRIVATE);
-                    String JWT = prefs.getString(MainActivity.JWT, "");
-                    Log.d("Voting", "Data is ready :" + eventId + " " + rating + description +"/"+ image + ">>>>>>>" +JWT);
-                    progressBar =  (ProgressBar) findViewById(R.id.progressbar);
-                    progressBar.setVisibility(View.VISIBLE);
-                    assessingEvent(eventId, description,image, rating ,JWT, new VolleyCallback() {
-                        @Override
-                        public void onSuccess(String result) {
-                            Log.d("Voting", "Response:" + result);
-                            try {
-                                progressBar.setVisibility(View.INVISIBLE);
-                                JSONObject jsonResult = new JSONObject(result) ;
-                                String stringResult = String.valueOf(jsonResult.get("success"));
-                                Log.d("Voting", "string:" + stringResult );
-                                if(stringResult.equals("true")){
-                                    setResult(RESULT_OK, getIntent());
-                                    finish();
+                    else {
+                        // No image only description
+                        // Adding the vote to the blockchain
+                        SharedPreferences prefs = getSharedPreferences(MY_GLOBAL_PREFS, MODE_PRIVATE);
+                        String JWT = prefs.getString(MainActivity.JWT, "");
+                        Log.d("Voting", "Data is ready No image :" + eventId + " " + rating + description +"/"+ image_hash + ">>>>>>>" +JWT);
+                        progressBar =  (ProgressBar) findViewById(R.id.progressbar);
+                        progressBar.setVisibility(View.VISIBLE);
+                        assessingEvent(eventId, description,image_hash, rating ,JWT, new VolleyCallback() {
+                            @Override
+                            public void onSuccess(String result) {
+                                Log.d("Voting", "Response:" + result);
+                                try {
+                                    progressBar.setVisibility(View.INVISIBLE);
+                                    JSONObject jsonResult = new JSONObject(result) ;
+                                    String stringResult = String.valueOf(jsonResult.get("success"));
+                                    Log.d("Voting", "string:" + stringResult );
+                                    if(stringResult.equals("true")){
+                                        setResult(RESULT_OK, getIntent());
+                                        finish();
+                                    }
+                                    else {
+                                        setResult(RESULT_CANCELED, getIntent());
+                                        finish();
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
                                 }
-                                else {
-                                    setResult(RESULT_CANCELED, getIntent());
-                                    finish();
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
 
-                        }
-                    });
+                            }
+                        });
+
+                    }
 
 
 
