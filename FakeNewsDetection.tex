@@ -1,0 +1,66 @@
+\documentclass{report}
+ \usepackage{lipsum}
+ \usepackage[margin=1in,left=1.5in,includefoot]{geometry}
+\usepackage{graphicx} %allows you to get photos 
+\usepackage{float} 
+\usepackage{blindtext}
+\usepackage[utf8]{inputenc}
+\usepackage{wrapfig,lipsum}
+\usepackage{parallel,enumitem}
+\usepackage{hyperref}
+
+
+
+\begin{document}
+
+
+\begin{titlepage}
+	\centering
+	\includegraphics[width=\paperwidth]{images/logo.jpg}\par\vspace{1cm}
+	{\scshape\LARGE  \par}
+	\vspace{1cm}
+	{\scshape\Large Research Project\par}
+	\vspace{1.5cm}
+	{\huge\bfseries Trustworthy Recording of Media Files using Blockchains \par}
+	\vspace{1cm}
+	{\huge\itshape Hesham Hosney\par}
+        \vspace{2cm} 
+	{\Large Supervisor:\par } 
+	{\huge Prof. Dr. Rüdiger Kapitza\par}
+        \vspace{.5cm} 
+        {\huge M. Sc. Rüdiger Kapitza}
+	\vfill
+% Bottom of the page
+	{\large \today\par}
+\end{titlepage}
+
+
+\cleardoublepage
+
+\tableofcontents
+\cleardoublepage
+
+
+\input{chapters/introduction.tex}
+\input{chapters/chapter1.tex}
+
+\cleardoublepage
+\listoffigures
+\begin{thebibliography}{9}
+
+\bibitem{latexcompanion}
+The Speed of Different Encryption Algorithms
+\url{https://www.cse.wustl.edu/~jain/cse567-06/ftp/encryption_perf/}
+
+\centerline{\bfseries Statement of Originality}
+	\vspace*{1em}
+	\noindent
+	This research project has been performed independently with the support of my supervisor/s.
+	To the best of the author's knowledge, this thesis contains no material previously
+	published or written by another person except where due reference is made in the text.
+
+\appendix
+
+\end{thebibliography}
+\end{document}
+ 
