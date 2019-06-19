@@ -144,17 +144,6 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
         }
 
 
-
-//        //Getting Location
-//        googleApiClient =  new GoogleApiClient.Builder(this)
-//                .addConnectionCallbacks(this)
-//                .addOnConnectionFailedListener(this)
-//                .addApi(LocationServices.API)
-//                .build();
-//     //   locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-////
-
-
         getLocationpdates();
 
         latitude = prefs.getString(MainActivity.LOCATION_LAT_KEY, "");
@@ -194,8 +183,8 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         data_list =  new ArrayList<>() ;
-
-        if (latitude == null && longitude == null ){
+        Log.d("Mainactivity", "before parsing "+ latitude + longitude);
+        if (latitude.isEmpty() && longitude.isEmpty() ){
             Toast.makeText(MainActivity.this, "Unable to Fetch the current Location!", Toast.LENGTH_SHORT).show();
         }
         else {
