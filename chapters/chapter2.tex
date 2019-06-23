@@ -1,5 +1,6 @@
 \chapter{The Blockchain And Hyperledger Fabric Background}
 
+
 \section{The Blockchain} 
 
 
@@ -69,20 +70,62 @@ Hyperledger Fabric comprises of three main components:
   \item Fabric Orderer 
 \end{itemize} 
 
-\\
 
 \textbf{ Fabric Certificate Authority (Fabric CA):} every single operation on hyperledger fabric must be signed with certificates no matter where the certificate came from if it is generated or purchased or generated from a trusted third party. Certificates are following X509 Standard and as mentioned there are many ways to generate certificates.
 Fabric CA is a high-quality tool that pursues cryptographic standards to generate certificates these certificates are per user and attributes could be added while generating those certificates thus specific rules and permissions could be enforced per specific group of users. it is a place to generate certificates and  where the account would be created this process called enrollment you provide username and password and the fabric CA does all the magic. 
 In addition fabric CA could be attached to an existing LDAP and all attributes would be fetched from there. 
 by registering user and enroll them then provididing the certificate to SDK and the SDK signs all requests that will be executed inside hyperledger fabric. \\ 
 
-\textbf{Peer:} is where the place where the ledger blockchain is stored there could be more than one peer especially in production they contain the same ledger.  the request is sent from the SDK to peers, in order to do operations on the ledger like insert or query.  The main role of the peer is to endorse and update the ledger. all peers are synced automatically adding more peers in the network the other peer will automatically update the state of the newly joined peer, and this is facilitating the scalability of hyperledger fabric.  \\ 
+\textbf{Peer:} is the place where the ledger blockchain is stored there could be more than one peer especially in production they contain the same ledger.  the request is sent from the SDK to peers, in order to do operations on the ledger like insert or query.  The main role of the peer is to endorse and update the ledger. all peers are synced automatically adding more peers in the network the other peer will automatically update the state of the newly joined peer, and this is facilitating the scalability of hyperledger fabric.  \\ 
 
 \textbf{Orderer:} is coming into the heart of the consensus algorithm its main role is to provide order of operation before anything committed to the ledger it should be first validated and verified by the order and orderer creates the blocks so all transactions are stored into blocks and once blocks are full it will be sent to peers to be committed into the ledger. namely, the orderer is responsible for determining the order of operations.
 There are several different implementations of ordering the first type is Solo which is mainly for development and this is only one instance if this instance fails all the operations for updating the ledger will fail, and the second type is Kafka which is used for production it's a distributed ordering service operation. \\
 
-It's also worth mentioning the channel concept channels are a method developed in hyperledger fabric for data isolation More broadly it's a completely isolated instance of hyperledger fabric. every channel is completely independent and they never exchange data. when building network peers must be a part of the channel when creating peers, the peers should join a channel. with channel concept, the privacy and confidentiality of the data will be assured. the channel should be created and configured by a specific tool from hyper ledger fabric. in addition, one peer could be a part of different channels.  
+It's also worth mentioning \textbf{the channel} concept channels are a method developed in hyperledger fabric for data isolation More broadly it's a completely isolated instance of hyperledger fabric. every channel is completely independent and they never exchange data. when building network peers must be a part of the channel when creating peers, the peers should join a channel. with channel concept, the privacy and confidentiality of the data will be assured. the channel should be created and configured by a specific tool from hyper ledger fabric. in addition, one peer could be a part of different channels.  \\
  
+
+\textbf{Chaincode} is a smart contract which is a program that reads and updates the ledger data, usually, all the business logic is written inside the chaincode. namely, the only way of interacting with the ledger will be only via the chaincode. 
+The chaincode could be written in general purpose programming languages like Go, Java, and Javascript. There is no limitation on what could be done using chaincode it could have any desired complex business logic. \\
+
+One important note that the chaincode must be apart of a channel inside one channel there could be as many as chaincodes. it could be possible to define all the business logic on one chaincode or split it amongst many chaincodes. 
+The chaincode has to be installed and later instantiated. when writing chaincode it must be installed on every single peer that is a part of that channel this could be done using SDK or by using the peer itself. \\
+ 
+Installing the chaincode on the peers is a must once it's the only way to interact with the ledger which resides on the peers. 
+Once the chaincode is installed it should be then instantiated. 
+Instantiating the chaincode will start a container that runs the chaincode while instantiating the chaincode the endorsement policy would be applied which will be responsible for validating and matching the rule on every single operation. For instance, applying a rule in a way  that for every transaction every peer must agree on adding the record otherwise the transaction will be rejected. \\  \\  \\ 
+ 
+\textbf{Memebership Service Provider MSP}: is one of the most fundamental concepts of hyperledger fabric is a setup of cryptographical materials where the organizations will be defined. every single on hyperledger fabric must have its cryptographic certificates that define if a specific node belongs to specific organization generating the cryptographic material is trivial by hyperledger fabric tool cryptogen. 
+The most essential part is that only peers that are part of the same MSP could communicate with each other. other peers couldn't the peer must be a part of the organization and this is defined by the peer's certificate later when configuring the channel all the public certificates will be shared on the configuration thus only the configured peer with a shared certificate could communicate and be a part of this channel. 
+
+
+\cleardoublepage
+
+\subsection{Under The hood Hyperledger Fabric }
+
+In this part, we will try to explain how hyperledger fabric works under the hood,
+assume that we wanted to exchange the ownership of some assets, and The client wants to make a transaction, for example, adding data to the ledger. 
+The first step is that the user has to register and enroll in the organization using fabric CA and get back the proper cryptographic materials that authorize him to interact with the network. Then the SDK will be responsible for preparing the transaction as a transaction proposal. This transaction will be sent to one or more peers. 
+at this point the peer accepts this proposal and simulates it, the result of this simulation will be called read and write sets. at this phase, the ledger is not updated and the assets values remaining the same. 
+The endorsing peers which are special kind of peers that its role is to verify and approve the transaction. this is will be done by validating the format and the signature of the transaction, and if the application user is authorized to make this transaction. 
+then the peers are sending back those transaction responses to the SDK. the SDK collects all these transaction responses and signs it and send it to the orderer, the orderer node verifies the transaction signature and the endorsement policy. no matter if the transaction approved or rejected it will be stored on the blockchain, however, the state of the ledger will not be updated in case of the failure. in addition the order will verify the read and write sets collected from every single peer and makes sure they are all the same. 
+Finally in case of the transaction is valid the orderer will send the transaction to the committing peers to be committed and updating the ledger.
+\hyperref[fig:transactionflow]{Figure 2.2} depicts Hyperledger fabric transaction flow [1]. 
+\begin{figure}[H]
+	\includegraphics[width=15cm,height=10cm]{images/transactionflow.jpg}
+	\caption{Hyperledger Fabric Transaction Flow Diagram}
+	\label{fig:transactionflow}
+	\end{figure}
+
+ 
+ 
+
+ 
+ 
+
+ 
+ 
+
+
 
 
 
