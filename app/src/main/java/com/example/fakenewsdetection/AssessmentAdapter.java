@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 class AssessmentAdapter extends RecyclerView.Adapter<AssessmentAdapter.ViewHolder> {
     private Context mcontext;
@@ -70,9 +71,17 @@ class AssessmentAdapter extends RecyclerView.Adapter<AssessmentAdapter.ViewHolde
 
 
 
+        //processing the time stamp and convert it to a readable date.
+        long ts= Long.parseLong(timestamp);
+        Date d = new Date(ts * 1000);
+        DateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ssZ");
+        df.setTimeZone(TimeZone.getTimeZone("Europe/Berlin"));
+        String mDate= (df.format(d));
+
+
         viewHolder.id.setText(id);
         viewHolder.description.setText(description);
-        viewHolder.timestamp.setText("Posted: "+timestamp);
+        viewHolder.timestamp.setText("Posted: "+mDate);
         viewHolder.trustworthiness.setText("Trustworthiness: "+ trustworthiness + " Ranking: " + rating );
 
 

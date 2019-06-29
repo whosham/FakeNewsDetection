@@ -144,17 +144,6 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
         }
 
 
-
-//        //Getting Location
-//        googleApiClient =  new GoogleApiClient.Builder(this)
-//                .addConnectionCallbacks(this)
-//                .addOnConnectionFailedListener(this)
-//                .addApi(LocationServices.API)
-//                .build();
-//     //   locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-////
-
-
         getLocationpdates();
 
         latitude = prefs.getString(MainActivity.LOCATION_LAT_KEY, "");
@@ -194,8 +183,8 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         data_list =  new ArrayList<>() ;
-
-        if (latitude == null && longitude == null ){
+        Log.d("Mainactivity", "before parsing "+ latitude + longitude);
+        if (latitude.isEmpty() && longitude.isEmpty() ){
             Toast.makeText(MainActivity.this, "Unable to Fetch the current Location!", Toast.LENGTH_SHORT).show();
         }
         else {
@@ -256,16 +245,22 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.onI
                             df.setTimeZone(TimeZone.getTimeZone("Europe/Berlin"));
                             String mDate= (df.format(d));
 
-                            Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+                            Geocoder geocoder = null;
                             List<Address> addresses = null;
                             try {
-                                addresses = geocoder.getFromLocation(latitude, longitude, 1);
-                            } catch (IOException e) {
+                                geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+                                addresses = null;
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
-                            if (addresses.size() > 0){
-                                cityName=addresses.get(0).getLocality();
-                                Log.d("querychaincode", "City name:"+ addresses.get(0).getLocality() ) ;
+                            try {
+                                addresses = geocoder.getFromLocation(latitude, longitude, 1);
+                                if (addresses.size() > 0){
+                                    cityName=addresses.get(0).getLocality();
+                                    Log.d("querychaincode", "City name:"+ addresses.get(0).getLocality() ) ;
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
 
 
@@ -634,6 +629,11 @@ public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
         //checking the result from login from login activity
         if (resultCode == RESULT_OK && requestCode == SIGNIN_REQUEST) {
+            // Restarting app in case of logout
+            Intent restart  = getBaseContext().getPackageManager()
+                    .getLaunchIntentForPackage( getBaseContext().getPackageName() );
+            restart.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(restart);
             Toast.makeText(MainActivity.this,"Welcome!", Toast.LENGTH_LONG).show();
         }
 
