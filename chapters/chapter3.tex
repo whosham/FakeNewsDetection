@@ -1,6 +1,8 @@
 \chapter{The Application Infrastructure}
 
-The Fake news detetction system architecture is shown in\hyperref[fig:infrastructure]{Figure 3.1} it was inspired from balance transfer network [2]
+\section{System Architecture}
+
+The Fake news detection system architecture is shown in\hyperref[fig:infrastructure]{Figure 3.1} it was inspired from balance transfer network [2]
  \begin{figure}[H]
 \includegraphics[width=15cm,height=12cm]{images/infrastructure.png}
 \caption{The Application Infrastructure Overview}
@@ -9,22 +11,165 @@ The Fake news detetction system architecture is shown in\hyperref[fig:infrastruc
 \cleardoublepage
 
 As shown the system comprises of Two Organizations Organization 1 and organization 2. with two peers in each organization. 
-With a solo orderer node.  There are also two fabric CA Server one for each organization, a couchdb instance per organization for more efficient and rich queries. 
+With a solo orderer node.  There are also two fabric CA Server one for each organization, Two \textbf{Couch-DB} instances as world state for more efficient and rich queries. 
 In addition, we are using node.js SDK  for interacting to the hyperledger fabric network and abstracting all the network infrastructure as a standard model thus the network could be scalable horizontally and vertically. All nodes are running on Docker containers for our testing purpose we implemented all the infrastructure on one Virtual Machine, However, in a production scenario every node should be an independent physical instance. \\ 
 
-A layer of authentication using a traditional database was added, so that the users could sign up on our application using the traditional way we used email and password, however integrating a phone authentication with One time pad could be a trivial thing. 
+A layer of authentication using a traditional database was added so that the users could sign up on our application using the traditional way we used email and password, however integrating a phone authentication with One time pad could be a trivial thing. 
 Once the user successfully login he could send requests from android device using our application to the SDK. and the SDK will handle the interaction with hyperledger fabric network and the chaincode. 
  
-The fabirc CA Server will be responsilbe for Registration of identities, Issuance of Enrollment Certificates for signing and identifying, Issuance of Transaction Certificates and Providing both anonymity and unlinkability when transacting on a Hyperledger Fabric blockchain. All these functionality are provided.
+The fabric CA Server will be responsible for Registration of identities, Issuance of Enrollment Certificates for signing and identifying, Issuance of Transaction Certificates and Providing both anonymity and unlinkability when transacting on a Hyperledger Fabric blockchain. All these functions are provided.
 The network was an adoption of Balance transfer [2] A sample Node.js app to demonstrate fabric-client, fabric-ca-client and Node.js SDK APIs. 
-the main idea of the network is to demontsrate a simple use case app using hyperledger fabric in order to transfer a balance from a user to another one and query the chaincode. we modified te network, added a couchdatabse instance and updating it with our chaincode. we modified the nodejs application to suit our application. 
+the main idea of the network is to demonstrate a simple use case app using hyperledger fabric in order to transfer a balance from a user to another one and query the chaincode. we modified the network, added a couch database instance and updating it with our chaincode. we modified the nodejs application to suit our application. 
 
-Crypto material has been generated using the cryptogen tool from Hyperledger Fabric and mounted to all peers, the orderering node and CA containers. 
-Beside An Orderer genesis block (genesis.block) and channel configuration transaction (mychannel.tx) has been pre generated using the configtxgen tool from Hyperledger Fabric and placed within the artifacts folder. 
+Crypto material has been generated using the cryptogen tool from Hyperledger Fabric and mounted to all peers, the orderer node and CA containers. 
+Beside An Orderer genesis block (genesis.block) and channel configuration transaction (mychannel.tx) has been pre-generated using the configtxgen tool from Hyperledger Fabric and placed within the artifacts folder. 
+
+\section{Building the Network} 
+
+Hyperledger Fabric came with many tools for facilitating the development process. As hyperledger fabric is modular by design many modules interacting together to make the application up and running.  
+Once all prerequisites packages are installed on the platform where the application supposed to be installed. Hyperledger Fabric community provided fully annotated scripts that simply launches the network and generate the cryptographic material.
+Initially, All the network topology should be pre-described in a yaml file, for instance, the number of organizations and peers, and the organization name. 
+Taking into consideration that, every single operation must be signed and verified. as a result, every single network entities must have cryptographic materials (x509 certs and signing keys) those certificates will be used as identities and expedite the authentication process to take place as entities communicate and transact. 
+One of those tools are Cryptogen tool which cosumes the yaml file describing the network and generate all required cryptographic materials, after running cryptogen the generated certificates and keys will be saved to a folder titled crypto-config.
+ 
+\cleardoublepage
+
+\hyperref[fig:cryptoconfig]{Figure 3.2} describes the crypto config directory structure  
+ \begin{figure}[H]
+\includegraphics[width=15cm,height=12cm]{images/cryptoconfig.jpg}
+\caption{Crypto Config Directory structure}
+\label{fig:cryptoconfig}
+\end{figure}
+
+Configtxgen is used to generate the main configuration artifacts. such as genesis block, the channel and the anchor peers. 
+Finally, docker-compose will be used to spin up the network. 
+\cleardoublepage
+
+
+\section{Node.js App Backend and Node.js Fabric SDK} 
+In our application we adopted one of the sample network provided by hyperledger fabric called balance transfer as a backend, this was done after modifying the main scripts to cope with our application requirements. 
+\textbf{Balance Transfer} is a simple network with nodejs app that demonstrates fabric-client, fabric-ca-client, and Node.js SDK APIs.
+\begin{itemize}
+  \item Allows the communication with the hyperledger fabric network by using fabric node.js Libraries.
+  \item Allows different operations using GET/POST requests, such as channel’s creation, joining the channel, installing and instantiating the chaincode.  
+\end{itemize} 
+\bigskip
+\textbf{Node.js Fabrik SDK:} [3] eases the communication with hyperledger fabric blockchain using APIs. 
+The Hyperledger Fabric SDK allows the interaction with the network on behalf of the users by simply calling APIs the following operations are supported: \\  
+
+\begin{itemize}
+   \item Creating channels.
+   \item Allowing peers to join channels. 
+   \item Installing chaincodes in the peers.
+   \item Instantiating chaincodes in the a channel. 
+   \item Querying the ledger. 
+   \item Invoking transactions. 
+\end{itemize}  
+\bigskip
+We used two main modules provided by the SDK: 
+
+ \begin{itemize}
+  \item fabric-client: Provides APIs to interact with the core components of a Hypreledger Fabric-based blockchain network, namely the peers, orderers and event streams.
+  \item fabric-ca-client: Provides APIs to interact with the optional component, fabric-ca, that contains services for membership management.
+\end{itemize} 
+\bigskip
+
+\section{Understanding Node.js APP} 
+Node.js App[4] comprises of java scripts which simplify the process of the communication with hyperledger fabric network. it obscures all the network and exposes REST APIs for communication.
+\ \\ 
+\textbf{app.js} will route the requests in a modular way by avoiding the repetitive tasks. express node.js framework used to do all of those functionality. 
+\ \\ 
+\textbf{users.js} will validate if the user enrolled on the organization or not. If not it will enroll the user by calling fabric-ca-client and generate json web token JWT and returned top the user to make subsequent requests . 
+\ \\ 
+\textbf{helper.js} will load the network configuration settings, where all the keys are stored, thus the fabric-ca library could interact with the different hyperledger fabric entity. Furthermore, it will check if the user enrolled if not it will enroll by loading admin credentials and calling fabric-ca-client to enroll the user.
+\ \\ 
+\textbf{install-chaincode.js} contains the method for calling fabirc-client to install the chaincode on the peers.  \\ 
+\ \\ 
+\textbf{instantiate-chaincode.js} contains methods to instantiate the chaincode on the channel.  \\ 
+\ \\  
+\textbf{invoke-transaction.js} will invoke transaction proposals. \\
+\ \\
+\textbf{\large{Json Web Token(JWT)}  }\\ 
+\ \\ 
+For securing the requests a jwt which is a signed token and returned to the application user.
+Subsequently, the token can be sent over to the http request for every other request that needs authentication on the blockchain. The application then validates the token and, if it’s valid, returns the secure resource to the client.
+As per the below code snippet, the jwt will be expired after 10 hours then the user has to renew the jwt. \\ 
+
+\begin{lstlisting}[language=Python, caption=JWT Generation]
+const token = jwt.sign({
+    exp: Math.floor(Date.now() / 1000) + parseInt(
+        hfc.getConfigSetting('jwt_expiretime'), 10),
+    username,
+    orgName
+}, app.get('secret'));
+
+const response = await helper.getRegisteredUsers(username, orgName);
+
+if (response && typeof response !== 'string') {
+    res.json({
+        success: true,
+        token
+    });
+} else {
+    res.json({
+        success: false,
+        message: response
+    });
+}
+\end{lstlisting}
+\cleardoublepage
+\textbf{\large{runApp.sh}  }\\
+
+Using runApp.sh will spin up the network and expose the url all docker container will be up and running. In addition, it will launch an instance of the app listening on port 4000. \\
+\hyperref[fig:runapp]{Figure 3.3} displays simple output after running runApp.sh script. 
+\ \\
+ \begin{figure}[H]
+\includegraphics[width=15cm,height=12cm]{images/runapp.jpg}
+\caption{runapp.sh Script Simple Output}
+\label{fig:runapp}
+\end{figure}
+
+
+\textbf{\large{testApi.sh}  }\\
+
+After runApp.sh script successfully run and all network components are up and running. testApi.sh script will be responsible for creating a channel, allowing peers to join the channel, installing chaincode on the peers. last but not least instantiating the chaincode on the channel.
+\cleardoublepage
+
+\section{Mysql Login Database} 
+In order to allow the application users to register to our application on a traditional way using email and password. we created a traditional relational MySQL database called "fake news" to store the users' email and hashed password with one table "login". 
+We are making the process of users' registration independent from the blockchain network.
+Although we have only one server that hosts both the Xampp server and the fabric network. However, this is only for the development purpose. 
+
+   
+We created a simple XAMP Server consists of: 
+\begin{itemize}
+   \item Mysql Database: to store the login data information. 
+   \item Apache as a webserver to serves the requests over the network. 
+   \item Php as a scripting language to consumes  the requests and making different  CRUD(Create, Update, Read, Delete) actions on the database.
+   \item PhpMyadmin for simplifying the management of the database using a web interface. 
+\end{itemize}  
+\bigskip
 
 
 
-\section{} 
+\section{The Enrollment Procedures} 
+This section describes the enrollment procedures and
+  
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
 
 
  
