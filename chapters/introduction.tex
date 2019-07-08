@@ -1,25 +1,25 @@
 \chapter{Introduction}
-
-	
-	
-	% \begin{figure}[H]
-	%\includegraphics[width=13cm,height=5cm]{/Users/Whosham/Desktop/ICT/report/PIC/3.png}
-	%\caption{Let's Encrypt vs Commercial Certificate Authorities}
-	%\end{figure}
 	 
-	 
-	\section{Abstract}
+\section{Abstract}
 
 The Blockchain technology is having a huge potential since it had a huge contribution in redefining the way the data is stored, updated, and moved.
 it is expected that the blockchain will revolutionize different business and industry. with such huge capabilities,
-In this report, we proposed a platform for detecting fake news using Hypereledger fabric technology, we implemented an android application in order to, help the users to share and rank nearby events. Thanks to Hyperledger fabrics' features like immutability, trustworthy, transparency, we proposed a prototype of our application to mitigate the spread of fake news our application leveraging the blockchain technology and enabling it as a simple use case in the industry.\newline 
+In this report, we proposed a platform for detecting fake news using Hypereledger fabric technology, we implemented an android application in order to, help the users to share and rank nearby events. Thanks to Hyperledger fabrics' features like immutability, trustworthy, transparency, we proposed a prototype of our application to mitigate the spread of fake news our application leveraging the blockchain technology and enabling it as a simple use case in the industry.\\
 
-This report describes the proposed work as follow, we will start with a walk through the application and the use case scenario, in chapter 2 we will give a brief introduction about blockchain and Hyperledger fabric. In chapter 3 we discuss the application infrastructure we used, for instance, the network nodes, SDK implementation, and API calls. In Chapter 4 we are summarizing the android application part and how we designed and developed the application in depth. Chapter 5 will focus on the results and insights gained in a performance evaluation.
+This report describes the proposed work as follow, we will start with the main motivation, a walk through the application and the use case scenario, in chapter 2 we will give a brief introduction about blockchain and Hyperledger fabric. In chapter 3 we discuss the application infrastructure we used, for instance, the network nodes, SDK implementation, and API calls. In Chapter 4 we are summarizing the android application part and how we designed and developed the application in depth. Chapter 5 will focus on the results and insights gained and issues. 
+
+
+
+\section{Problem Statement}
+
+In the era of social media, fake news or fabricated content is exponentially growing. Social media platforms are set up to push the most viewed content. And controversial topics get way more interactions. Facebook shows an endless stream of items from all over the web. Click an interesting headline and you may end up on a fake-news site. fake stories have no reputation to maintain and no incentive to stay honest; Social media becomes a breeding ground for fake news could easily bias the public opinion and ruining people's reputation. this raises our aim to implement an application that could mitigate the fake news by incenting users to share and verify stories and build a reputation system for the story creator that facilitate the detection of the fake news and enable users to report only the accurate news.
+
+
 \cleardoublepage
 
-	\section{Introduction Walk-Through}
-	The spread of social media and integrating it as an essential part of our daily life has a tremendous effect on spreading fake news. Many adults prefer getting news from the social media platforms like Facebook and Twitter more than the legacyways like newspaper and broadcast, with the advance of technology it become trivial to manipulate images and videos.   
-	Our mission is to mitigate fake news with our platform we incent users to publish and rank nearby events based on their reputation. By using hyperledger technology it will be hard to manipulate the data once it's stored on the blockchain.\\ we are using a ranking scheme to increase the trustworthiness of the users, by virtue of the chain code or smart contract, which will be responsible for handling the business logic and rank the events based on users location and  trustworthiness. The architecture of our application could be described in particular as below: 	 
+	\section{Introductory Walk-Through}
+    The spread of social media and integrating it as an essential part of our daily life has a tremendous effect on spreading fake news. Many adults prefer getting news from the social media platforms like Facebook and Twitter more than the legacy ways like newspaper and broadcast, with the advance of technology it becomes trivial to manipulate images and videos.   
+    Our mission is to mitigate fake news with our platform we incent users to publish and rank nearby events based on their reputation. By using hyperledger technology it will be hard to manipulate the data once it's stored on the blockchain.\\ we are using a ranking scheme to increase the trustworthiness of the users, by virtue of the chain code or smart contract, which will be responsible for handling the business logic and rank the events based on users location and trustworthiness. The architecture of our application could be described in particular as below:      
 
        \begin{enumerate}
 	 \item {A User can capture an event or text and upload it using our android application to the blockchain.}
@@ -32,14 +32,12 @@ This report describes the proposed work as follow, we will start with a walk thr
 
 
 \cleardoublepage
-	In \hyperref[fig:appflow]{Figure 1.1} we described the previously mentioned procedures as an overview of our platform.
+\noindent In \hyperref[fig:appflow]{Figure 1.1} we describe the previously mentioned procedures as an overview of our platform.
 	\begin{figure}[H]
 	\includegraphics[width=15cm,height=12cm]{images/appflow.png}
 	\caption{The Application Walkthrough}
 	\label{fig:appflow}
 	\end{figure}
-
-\cleardoublepage
 
 \section{Architecture}
 The platform would be dismantled into three main components: 
@@ -49,7 +47,9 @@ The platform would be dismantled into three main components:
   \item The Android Development. 
 \end{itemize}
 
-We will discuss every single component in details in a separate chapter we will start with the necessary background information about the Blockchain and main components and terminologies of hyper ledger fabric for example peers, chaincode, transactions .etc. \\ Then we will discuss the backend, API Design  and how the API call requests will be consumed and the nodejs SDK handles the request, then forwards it to the chaincode which is the only way to interact with the blockchain.
+\cleardoublepage
+
+\noindent We will discuss every single component in details in a separate chapter we will start with the necessary background information about the Blockchain and main components and terminologies of hyper ledger fabric for example peers, chaincode, transactions .etc. \\ Then we will discuss the backend, API Design  and how the API call requests will be consumed and the nodejs SDK handles the request, then forwards it to the chaincode which is the only way to interact with the blockchain.
 Finally, we will discuss the Android application design, UI elements , network request in json that is calling API and the coding in depth with all the functions implemented \hyperref[fig:architecture]{Figure 1.2} depicts all the architecture overview of the platform. 
 \begin{figure}[H]
 	\includegraphics[width=15cm,height=10cm]{images/architecture.png}

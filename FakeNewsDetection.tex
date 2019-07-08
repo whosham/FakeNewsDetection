@@ -10,6 +10,32 @@
 \usepackage{hyperref}
 \usepackage{listings}
 
+\usepackage[T1]{fontenc}
+\usepackage{inconsolata}
+
+\usepackage{color}
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{pred}{rgb}{0.9,0,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\usepackage{listings}
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{pgreen},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pred},
+  basicstyle=\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$$},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+
 
 
 \begin{document}
@@ -22,7 +48,7 @@
 	\vspace{1cm}
 	{\scshape\Large Research Project\par}
 	\vspace{1.5cm}
-	{\huge\bfseries Trustworthy Recording of Media Files using Blockchains \par}
+	{\huge\bfseries Trustworthy Recording of Media Files Using Blockchains \par}
 	\vspace{1cm}
 	{\huge\itshape Hesham Hosney\par}
         \vspace{2cm} 
@@ -46,6 +72,8 @@
 \input{chapters/introduction.tex}
 \input{chapters/chapter2.tex}
 \input{chapters/chapter3.tex}
+\input{chapters/chapter4.tex}
+\input{chapters/chapter5.tex}
 \input{chapters/conclusion.tex}
 
 \addcontentsline{toc}{chapter}{Conclusion}
@@ -66,7 +94,17 @@ Hyperledger Fabric Node.js SDK
 \bibitem{latexcompanion}
 Node.js APP Source Code
 \url{https://gitlab.ibr.cs.tu-bs.de/ds-thesis/2018-pa-hesham-mohamed-media-blockchain/tree/network-configurations/app}
+\bibitem{latexcompanion}
+Chaincode Rest API calls 
+\url{https://gitlab.ibr.cs.tu-bs.de/ds-thesis/2018-pa-hesham-mohamed-media-blockchain/wikis/API-Calls-Documentation}
+\bibitem{latexcompanion}
+A guide for setting up the infrastructure
+\url{https://gitlab.ibr.cs.tu-bs.de/ds-thesis/2018-pa-hesham-mohamed-media-blockchain/wikis/How-to-setup-the-infrastructure.}
 
+
+\bibitem{latexcompanion}
+Android Documentation
+\url{https://developer.android.com/docs}
 
 
 
