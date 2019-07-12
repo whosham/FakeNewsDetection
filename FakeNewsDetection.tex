@@ -43,7 +43,7 @@
 
 \begin{titlepage}
 	\centering
-	\includegraphics[width=\paperwidth]{images/logo.jpg}\par\vspace{1cm}
+	\includegraphics[width=15cm,height=4cm]{images/ibr.png}\par\vspace{1cm}
 	{\scshape\LARGE  \par}
 	\vspace{1cm}
 	{\scshape\Large Research Project\par}
@@ -63,12 +63,35 @@
 
 
 \cleardoublepage
-
 \tableofcontents
-
+\listoffigures
 \cleardoublepage
 
 
+
+\begin{abstract}
+The Blockchain technology is having a huge potential since it had a huge contribution in redefining the way the data is stored, updated, and moved.
+It is expected that the blockchain will revolutionize different business and industry with such huge capabilities,
+In this report, we proposed a platform for detecting Fake news using Hypereledger fabric technology.
+We implemented an Android application that allows the users to share and rank nearby events.  \\ 
+
+The event is an incident which happened somewhere, for example, a car accident or urgent road maintenance leads to closing the main road. We incent users to share their stories and the stories will be displayed only to the nearby users.
+We proposed a reputation system for ranking the users and their stories. The algorithm ranks the users and the events they created is based on the users' location or how close the users from an event they are judging, and the users' reputation score. \\ 
+By keeping a reputation score for every single user depending on his previous contributions to the platform. and how close he was from the event he is assessing furthermore we collect the last 24 hours location traces for every user to make sure that the users are not scamming the platform. using the aforementioned methods we assure the trustworthiness of the shared events.
+Thanks to Hyperledger fabrics' features like immutability, trustworthy, and transparency, we proposed a prototype of our application to mitigate the spread of Fake news our application leveraging the blockchain technology and enabling it as a simple use case in the industry.
+We assure the data confidentiality since it will be stored on a distributed ledger and only updated by the chaincode which holds the whole business logic modifying the data once it's created is not possible the data will be immutably stored and distributed on multiple nodes.  \\ 
+
+This report describes the proposed work as follow, we will start with the main motivation, a walk through the application and the use case scenario, in chapter 2 we will give a brief introduction about blockchain and Hyperledger fabric. In chapter 3 we discuss the application infrastructure we used, for instance, the network nodes, SDK implementation, and API calls. In Chapter 4 we are summarizing the Android application part and how we designed and developed the application in depth. Chapter 5 will focus on the results and insights gained and issues. 
+\end{abstract}
+\cleardoublepage
+\centerline{\bfseries Statement of Originality}
+	\vspace*{1em}
+	\noindent
+	This research project has been performed independently with the support of my supervisors.
+	To the best of the author's knowledge, this research project contains no material previously
+	published or written by another person except where due reference is made in the text.
+
+\cleardoublepage
 \input{chapters/introduction.tex}
 \input{chapters/chapter2.tex}
 \input{chapters/chapter3.tex}
@@ -79,7 +102,7 @@
 \addcontentsline{toc}{chapter}{Conclusion}
 
 \cleardoublepage
-\listoffigures
+
 \begin{thebibliography}{9}
 
 \bibitem{latexcompanion}
@@ -108,17 +131,38 @@ Android Documentation
 Hyperledger Composer REST Server
 \url{https://hyperledger.github.io/composer/v0.19/reference/rest-server}
 
+\bibitem{latexcompanion}
+Bitcoin White Paper
+\url{https://bitcoin.org/bitcoin.pdf}
+
+\bibitem{latexcompanion}
+Blockchain vs Tranditional Database
+\url{https://www.researchgate.net/publication/327483781_Blockchain_Versus_Database_A_Critical_Analysis}
+
+\bibitem{latexcompanion}
+Blockchain Overview
+\url{https://www.researchgate.net/publication/318131748_An_Overview_of_Blockchain_Technology_Architecture_Consensus_and_Future_Trends}
+
+\bibitem{latexcompanion}
+Hawk: The Blockchain Model of Cryptography and Privacy-Preserving Smart Contracts
+\url{https://www.computer.org/csdl/proceedings-article/sp/2016/0824a839/12OmNs59JYD}
+
+\bibitem{latexcompanion}
+Hyperledger Fabric: A Distributed Operating System forPermissioned Blockchains
+\url{https://arxiv.org/pdf/1801.10228.pdf}
+
+\bibitem{latexcompanion}
+All roads lead to Rome:Many ways to double spend your cryptocurrency
+\url{https://arxiv.org/pdf/1811.06751.pdf}
+\bibitem{latexcompanion}
+Using CouchDB on Hyperledger Faric
+\url{https://hyperledger-fabric.readthedocs.io/en/release-1.4/couchdb_tutorial.html}
 
 
 \appendix
 \end{thebibliography}
 \cleardoublepage
-\centerline{\bfseries Statement of Originality}
-	\vspace*{1em}
-	\noindent
-	This research project has been performed independently with the support of my supervisor/s.
-	To the best of the author's knowledge, this thesis contains no material previously
-	published or written by another person except where due reference is made in the text.
+
 
 \end{document}
  

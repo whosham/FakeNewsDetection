@@ -10,14 +10,14 @@ The Fake news detection system architecture is shown in \hyperref[fig:infrastruc
 \end{figure}
 \cleardoublepage
 
-As shown, the system comprises of Two Organizations Organization 1 and organization 2 with two peers in each organization. 
-With a solo orderer node.  There are also two Fabric CA server one for each organization, Two \textbf{Couch-DB} instances as world state databases for more efficient and rich queries. 
+As shown, The system comprises of two organizations organization 1 and organization 2 with two peers in each organization. 
+With a solo orderer node.  There are also two Fabric CA servers one for each organization, Two \textbf{Couch-DB} instances as world state databases for more efficient and rich queries. 
 In addition, we are using node.js SDK in order to interact with the hyperledger fabric network and abstracting all the network infrastructure as a standard model, thus the network could be scalable horizontally and vertically. All nodes are running on Docker containers for our testing purpose we implemented all the infrastructure on one Virtual Machine, However, in a production scenario every node should be an independent physical instance. \\ 
 
 A layer of authentication using a traditional database was introduced so that the users could sign up on our application using the traditional way we used email and password method for registration and login, however, integrating a phone authentication with a one-time pad could be trivial. 
 Once the user successfully login he could send requests from the Android device using our application to the SDK. and the SDK will handle the interaction with hyperledger fabric network and the chaincode. \\
  
-The Fabric CA Server will be responsible for the registration of identities, Issuance of enrollment certificates for signing and identifying the application users, Issuance of transaction certificates and providing both anonymity and unlinkability when transacting on a Hyperledger fabric blockchain. All these functions are provided.
+The Fabric CA server will be responsible for the registration of identities, Issuance of enrollment certificates for signing and identifying the application users, Issuance of transaction certificates and providing both anonymity and unlinkability when transacting on a Hyperledger fabric blockchain. All these functions are provided.
 The network was the adoption of Balance transfer [2] A sample Node.js app to demonstrate fabric-client, fabric-ca-client, and Node.js SDK APIs. 
 the main idea of the network is to demonstrate a simple use case app using hyperledger fabric in order to transfer a balance from a user to another one and query the ledger. we modified the network, added couch database instances and updating it with our chaincode. we modified the node.js application to suit our application. \\ 
 
@@ -29,7 +29,7 @@ The genesis block (genesis.block) and the channel configuration(mychannel.tx) ha
 Hyperledger fabric came with many tools for facilitating the development process. As hyperledger fabric is modular by design many modules interacting together to make the application up and running.  
 Once all prerequisites packages are installed on the platform where the application supposed to be installed. Hyperledger fabric community provided fully annotated scripts that simply launches the network and generate the cryptographic material. \\ 
 
-Initially, All the network topology should be pre-described in a yaml file, for instance, the number of organizations and peers, and the organization name. 
+Initially, All the network topology should be pre-described in a yaml file, for instance, the number of organizations and peers, and the organizations name.\\
 Taking into consideration that, every single operation must be signed and verified. as a result, every single network entity must have cryptographic materials (x509 certs and signing keys) those certificates will be used as identities and expedite the authentication process to take place as entities communicate and transact.  \\ 
 One of those tools is Cryptogen tool which consumes the Yaml file, which describes the network and generates all required cryptographic materials, after running Cryptogen tool. The generated certificates and keys will be saved to a folder titled crypto-config.
 
@@ -37,7 +37,8 @@ One of those tools is Cryptogen tool which consumes the Yaml file, which describ
 
 \noindent \hyperref[fig:cryptoconfig]{Figure 3.2} describes the crypto config directory structure.  
  \begin{figure}[H]
-\includegraphics[width=15cm,height=12cm]{images/cryptoconfig.jpg}
+\center
+\includegraphics[width=8cm,height=8cm]{images/cryptoconfig.jpg}
 \caption{Crypto Config Directory structure}
 \label{fig:cryptoconfig}
 \end{figure}
@@ -74,12 +75,12 @@ We used two main modules provided by the SDK:
 \end{itemize} 
 \bigskip
 
-\section{Understanding Node.js APP} 
+\section{Understanding Node.js App} 
 Node.js App[4] comprises of java scripts which simplify the process of the communication with hyperledger fabric network. it obscures all the network and exposes REST APIs for communication. the main files are highlighted as below. 
 \ \\ 
 \textbf{app.js} will route the requests in a modular way by avoiding the repetitive tasks. express node.js framework used to do all of those functionality. 
 \ \\ 
-\textbf{users.js} will validate if the user enrolled successfully on the organization or not. If not it will enroll the user by calling fabric-ca-client and generate a  json web token JWT, Finally the application user will receive this JWt to make subsequent requests. 
+\textbf{users.js} will validate if the user enrolled successfully on the organization or not. If not it will enroll the user by calling fabric-ca-client and generate a  json web token JWT, Finally the application user will receive this JWT to make subsequent requests. 
 \ \\ 
 \textbf{helper.js} will load the network configuration settings, where all the keys are stored, thus the fabric-ca library could interact with the different hyperledger fabric entities. Furthermore, it will check if the user enrolled, and if the user was not enrolled.  It will enroll by loading admin credentials and calling fabric-ca-client to enroll the user.
 \ \\ 
@@ -90,13 +91,14 @@ Node.js App[4] comprises of java scripts which simplify the process of the commu
 \textbf{invoke-transaction.js} will invoke transaction proposals. \\
 \ \\
 
+\cleardoublepage
 \subsection{ Json Web Token(JWT) }
 For securing the requests a JWT which is a signed token will be generated after enrolling the user and it will be sent to the application user to make subsequent requests.
 The token can be sent over in the request's header when making API calls for invoking transactions or querying the ledger.\\ 
 The application then validates the token and, if it’s valid, the request will be forwarded to the fabric network.
 As per the below code snippet, the JWT will be expired after 10 hours then it should be renewed from the application side by pressing on the reload button.  \\ 
 
-\begin{lstlisting}[language=Python, caption=JWT Generation]
+\begin{lstlisting}[language=Python, caption=JWT Generation,captionpos=b]
 const token = jwt.sign({
     exp: Math.floor(Date.now() / 1000) + parseInt(
         hfc.getConfigSetting('jwt_expiretime'), 10),
@@ -122,8 +124,8 @@ if (response && typeof response !== 'string') {
 
 
 \subsection{runApp.sh Script }
-Using runApp.sh will spin up the network and expose a URL. All docker containers will be up and running. In addition, it will launch an instance of the app listening on port 4000. \\
-\hyperref[fig:runapp]{Figure 3.3} displays simple output after running runApp.sh script. 
+Using runApp.sh from balance transfer network[3] will spin up the network and expose a URL. All docker containers will be up and running. In addition, it will launch an instance of the app listening on port 4000. \\
+\hyperref[fig:runapp]{Figure 3.3} displays a simple output after running runApp.sh script. 
 \ \\
  \begin{figure}[H]
 \includegraphics[width=15cm,height=12cm]{images/runapp.jpg}
@@ -134,7 +136,7 @@ Using runApp.sh will spin up the network and expose a URL. All docker containers
 
 \subsection{testApi.sh Script }
 
-After runApp.sh script successfully run and all network components are up and running. testApi.sh script will be responsible for creating a channel, allowing peers to join the channel, installing chaincode on the peers. last but not least instantiating the chaincode on the channel.
+After runApp.sh script successfully run and all network components will be up and running. testApi.sh script will be responsible for creating a channel, allowing peers to join the channel, installing chaincode on the peers. last but not least instantiating the chaincode on the channel.
 \cleardoublepage
 
 \section{Mysql Login Database} 
@@ -150,7 +152,7 @@ We created a simple XAMPP Server consists of:
    \item PhpMyadmin for simplifying the management of the database using a web interface. 
 \end{itemize}  
 \bigskip
-The User will send a registration request using an email and password from the android device.  The request will be sent over the network, the Apache server is listening on port 80. We are calling register.php script for registering users. The register.php script check if the email already existed if not it will insert a record in the login table with the user's email and the hashed password. and return a success response to the android as a confirmation. 
+The user will send a registration request using an email and password from the android device.  The request will be sent over the network, the Apache server is listening on port 80. We are calling register.php script for registering users. The register.php script check if the email already existed if not it will insert a record in the login table with the user's email and the hashed password. and return a success response to the android as a confirmation. 
 Similarly,  the login procedures, the user will send a login request using his email and hashed password by calling login.php and it will be checked against his record on the database if the entered credentials are correct. The access will be granted to the user. \\ 
 \hyperref[fig:xampp]{Figure 3.4} describes the simple Xampp server and the fakenews database schema.     
  \begin{figure}[H]

@@ -12,8 +12,8 @@ The application was designed to allow the users to interact with the blockchain.
 
 In this section, we describe the main classes we used in the application. Every class provided a different functionality.
 \subsection{Mainactivity}
-MainActiivty is the first activity launched when the application started. it checks if the user logged-in then it will direct the user to registration and login activity. 
-Once the user login the email address will be stored in the shared-preference in order to keep the user login. The location access permission will be checked as it's one of the essential parts to continuously fetch the location of the users. A warning message will be displayed to the user if the location access wasn't granted. As long as the location is granted. An enrollment request will be sent using the user's email address as discussed in 3.6 following the enrollment procedures and storing the JWT for making the upcoming requests to the blockchain network.
+MainActivity is the first activity launched when the application started. it checks if the user logged-in then it will direct the user to registration and login activities. 
+Once the user login the email address will be stored in the shared-preference in order to keep the user login. The location access permission will be checked as it's one of the essential parts to continuously fetch the location of the users. A warning message will be displayed to the user if the location access wasn't granted. As long as the location access permission is granted. An enrollment request will be sent using the user's email address as discussed in 3.6 following the enrollment procedures and storing the JWT for making the upcoming requests to the blockchain network.
 Finally, the application will use the JWT and the user's location to query the ledger and fetch all the nearby events and displaying them one by one chronologically in the news feed. 
 Displaying the feed is nontrivial we used RecyclerView adapter which is an android class used to represent the data dynamically in a separate view and provides the ability to implement both horizontal and vertical layouts. The RecyclerView adapter used to display the data collections whose elements change at runtime based on user action or network events.  In other words every time we query the ledger the user get a JSON response containing all events list. Those events change at run time based on the user's location. The events will be displayed one by one in a separate view similar to Facebook or Instagram posts. 
 We created a simple view holder for every event object and we instantiated an object of this view holder and binding the event data to it.    
@@ -21,7 +21,7 @@ The same methodology used to display the assessments list.
 \hyperref[fig:mainactivityflow]{Figure 4.2} Describes the flow of the Mainactivity. 
  \begin{figure}[H]
 \center
-\includegraphics[width=10cm,height=10cm]{images/mainactivityflow.png}
+\includegraphics[width=10cm,height=9cm]{images/mainactivityflow.png}
 \caption{Mainactivity Flowchart}
 \label{fig:mainactivityflow}
 \end{figure}
@@ -30,7 +30,7 @@ The same methodology used to display the assessments list.
 AddEvent is the activity that runs when the user wanted to create a new event. It will prompt the user to upload a photo and an event description. the activity will check the storage's permission access, and if it's granted it will allow the user to select an image from the gallery, then the image will be captured as a bitmap and converted into a string. This string will be hashed and sent to the Xampp server which will rebuild the media file and storing the file with its hash name. In other words, the picture will be stored with its hash and only the hash will be stored on the blockchain for fetching the picture and displaying it directly from the server, not from the blockchain. lastly, the transaction will be invoked by calling addEvent chaincode function name and passing all event's details as parameters.
 If the transaction successfully invoked a confirmation message will be displayed to the user that the event is online, Otherwise, an error will be displayed. 
  Storing the hash instead of the entire media file will be more efficient as the file will be replicated many times on the peers.
-It's similar to using A CDN which is a standard way to deliver content more quickly and efficiently, based on their geographic location. A content delivery network CDN allows for the quick transfer of assets needed for loading media content including images, and videos. using this approach will increase the performance and decrease the latency. In addition, storing the hash only will save a lot of disk space and assuring that the ledger size will be only a few megabytes instead of hundreds of terabytes. 
+It's similar to using A content delivery network CDN which is a standard way to deliver content more quickly and efficiently, based on their geographic location. A content delivery network CDN facilitates the quick transfer of assets needed for loading media content including images, and videos. using this approach will increase the performance and decrease the latency. In addition, storing the hash only will save a lot of disk space and assuring that the ledger size will be only a few megabytes instead of hundreds of terabytes. 
    
 \hyperref[fig:mainactivityflow]{Figure 4.3} Describes the flow of AddingEvent Activity. 
  \begin{figure}[H]
